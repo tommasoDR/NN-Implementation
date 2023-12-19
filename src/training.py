@@ -3,6 +3,8 @@ from functions import regularization_functions
 from functions import decay_functions
 from functions import loss_functions
 import numpy as np
+import random
+import math
 
 class SGD():
 
@@ -19,14 +21,14 @@ class SGD():
             print(e); exit(1)
 
         self.network = network
-        self.loss = loss_functions[loss_function]
+        self.loss = loss_functions.loss_funcs[loss_function]
         self.starting_learning_rate = learning_rate
         self.learning_rate = learning_rate
-        self.decay = decay_functions[learning_rate_decay_func]
+        self.decay = decay_functions.decay_funcs[learning_rate_decay_func]
         self.learning_rate_decay_epochs = learning_rate_decay_epochs
         self.momentum_alpha = momentum_alpha
         self.nesterov_momentum = nesterov_momentum
-        self.regularization = regularization_functions[regularization_func]
+        self.regularization = regularization_functions.regularization_funcs[regularization_func]
         self.regularization_lambda = regularization_lambda
 
     
@@ -50,30 +52,55 @@ class SGD():
 
         old_deltas = None
         for epoch in range(epochs):
-            mb_training_set_inputs, mb_training_set_targets = self.generate_minibatch(training_set_inputs, training_set_targets, minibatch_size, epoch)
-            minibatch_size = len(mb_training_set_inputs)
 
-            outputs_mb_train = [self.network.foward_pass(input) for input in mb_training_set_inputs]
-            targets_mb_train = [target for target in mb_training_set_targets]
+            # shuffle training set
+            training_set = list(zip(training_set_inputs, training_set_targets))
+            random.shuffle(training_set)
+            training_set_inputs, training_set_targets = zip(*training_set)
 
+            # iterates on minibatches
+            for minibatch_index in range(math.ceil(len(training_set_inputs) / minibatch_size)):
+                mb_training_set_inputs, mb_training_set_targets = self.generate_minibatch(training_set_inputs, training_set_targets, minibatch_index, minibatch_size)
+                minibatch_size = len(mb_training_set_inputs)
+
+                outputs_mb_train = [self.network.foward_pass(input) for input in mb_training_set_inputs]
+
+                dErr_dOut = self.loss.derivative(outputs_mb_train, mb_training_set_targets)
+                gradient = self.network.backpropagation(dErr_dOut)
+
+                deltas = self.calculate_deltas(gradient, minibatch_size)
+                
+                self.update_weights(deltas, old_deltas)
+                
+                old_deltas = deltas
+
+            # calculate loss
+            outputs_traininig = [self.network.foward_pass(input) for input in training_set_inputs]
             outputs_validation = [self.network.foward_pass(input) for input in validation_set_inputs]
 
-            training_errors[epoch] = self.loss.function(outputs_mb_train, targets_mb_train)
+            training_errors[epoch] = self.loss.function(outputs_traininig, training_set_targets)
             validation_errors[epoch] = self.loss.function(outputs_validation, validation_set_targets)
-
-            # TODO: check is parameters are in the correct order
-            dErr_dOut = self.loss.derivative(outputs_mb_train, targets_mb_train)
-            gradient = self.network.backpropagation(dErr_dOut)
-
-            deltas = self.calculate_deltas(gradient, minibatch_size)
-            
-            self.update_weights(deltas, old_deltas)
-            
-            old_deltas = deltas
 
             # learning rate decay
             if self.learning_rate_decay:
                 self.learning_rate = self.decay.function(self.starting_learning_rate, epoch, self.learning_rate_decay_epochs)
+
+
+    def generate_minibatch(self, training_set_inputs, training_set_targets, minibatch_index, minibatch_size):
+        """
+        Generates a minibatch from the training set
+        :param training_set_inputs: The training set inputs
+        :param training_set_targets: The training set targets
+        :param minibatch_index: The number of the minibatch
+        :param minibatch_size: The size of the minibatch
+        :return: The minibatch
+        """
+        start = minibatch_index * minibatch_size
+        end = start + minibatch_size
+
+        mb_training_set_inputs = [training_set_inputs[index] for index in range(start, end)]
+        mb_training_set_targets = [training_set_targets[index] for index in range(start, end)]
+        return mb_training_set_inputs, mb_training_set_targets
 
 
     def calculate_deltas(self, gradient, minibatch_size):
@@ -113,7 +140,6 @@ class SGD():
                 self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.momentum_alpha * old_delta_w)
             
              
-
 learning_methods = {
     'sgd': SGD
 }

@@ -1,3 +1,18 @@
+class Decay_function(): 
+    
+    def __init__(self, func, name):
+        self.__func = func
+        self.__name = name
+        
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def function(self):
+        return self.__func
+    
+
 def linear(learning_rate, min_learning_rate, epoch, learning_rate_decay_epochs):
     """
     Computes the new learning rate
@@ -10,3 +25,8 @@ def linear(learning_rate, min_learning_rate, epoch, learning_rate_decay_epochs):
         rate = epoch/learning_rate_decay_epochs
         return (1 - rate) * learning_rate + rate * min_learning_rate
     return min_learning_rate
+
+
+decay_funcs = {
+    'linear': Decay_function(linear, "Linear")
+}

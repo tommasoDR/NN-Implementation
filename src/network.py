@@ -50,6 +50,7 @@ class Network:
             outputs = layer.forward_pass(outputs)
         return outputs
     
+
     def backpropagation(self, dErr_dOut):
         """
         Performs backpropagation
@@ -60,6 +61,7 @@ class Network:
             dErr_dOut, gradient_biases, gradient_w = self.layers[layer_index].backward_pass(dErr_dOut)
             gradient[layer_index] = (gradient_biases, gradient_w)
         return gradient
+
 
     def calculate_loss(self, inputs, targets, loss_function):
         """
@@ -78,6 +80,7 @@ class Network:
         outputs = self.foward_pass(inputs)
         loss_value += loss.function(outputs, targets)
         return loss_value
+    
     
     def calculate_outputs(self, inputs):
         """

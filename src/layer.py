@@ -1,9 +1,10 @@
 from functions import activation_functions
-from utilities import weights_init
+from utilities import network_utilities as nu
 import numpy as np
 
 
 class Layer:
+    
     def __init__(self, input_dimension, num_unit, activation_func, weight_init_type, weight_init_range):
         """
         Initializes the layer
@@ -13,12 +14,12 @@ class Layer:
         """
         self.input_dimension = input_dimension
         self.num_unit = num_unit
-        self.activation = activation_functions[activation_func]
+        self.activation = activation_functions.activation_funcs[activation_func]
         self.weight_init_type = weight_init_type
         self.weight_init_range = weight_init_range
 
-        self.weights = weights_init(self.weight_init_type, self.weight_init_range, self.input_dimension, self.num_unit)
-        self.biases = weights_init(self.weight_init_type, self.weight_init_range, 1, self.num_unit)
+        self.weights = nu.weights_init(self.weight_init_type, self.weight_init_range, self.input_dimension, self.num_unit)
+        self.biases = nu.weights_init(self.weight_init_type, self.weight_init_range, 1, self.num_unit)
 
         self.inputs = None
         self.nets = None

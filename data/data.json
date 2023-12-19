@@ -20,7 +20,7 @@
         "max_num_epochs": 1000,
         "epsilon": 1e-06,
         
-        "weight_init_type": "random",
+        "weight_init_type": "random_uniform",
         "weight_init_range": [0.1, 0.9],
 
         "early_stopping": false,
@@ -55,7 +55,7 @@
     ],
 
     "weight_inits_type": [
-        "random"
+        "random_uniform"
     ]
 
 }
