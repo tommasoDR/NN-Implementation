@@ -1,0 +1,61 @@
+{
+    "parameters": {
+        "num_layers": 2,
+        "layer_sizes": [10, 1],
+
+        "hidden_activation_func": "relu",
+        "output_activation_func": "identity",
+        "loss_func": "mean_squared_error",
+
+        "learning_method": "SGD",
+        "learning_rate": 0.01,
+        "learning_rate_decay": "linear",
+        "learning_rate_decay_epochs": 0,
+        "momentum_alpha": 0.0,
+        "nesterov_momentum": false,
+        "regularization_lambda": 0.0,
+        "regularization_function": "l2",
+
+        "minibatch_size": 1,
+        "max_num_epochs": 1000,
+        "epsilon": 1e-06,
+        
+        "weight_init_type": "random",
+        "weight_init_range": [0.1, 0.9],
+
+        "early_stopping": false,
+
+        "verbose": false
+    },
+
+    "activation_funcs": [
+        "relu",
+        "identity",
+        "sigmoid",
+        "tanh"
+    ],
+
+    "loss_funcs": [
+        "mean_squared_error",
+        "mean_euclidean_error",
+        "cross_entropy_error"
+    ],
+
+    "decay_functions": [
+        "linear",
+        "exponential"
+    ],
+
+    "regularization_func": [
+        "L2"
+    ],
+
+    "learning_methods": [
+        "SGD"
+    ],
+
+    "weight_inits_type": [
+        "random"
+    ]
+
+}
