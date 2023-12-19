@@ -66,6 +66,7 @@ def check_parameters(parameters):
             print("The parameter " + keys + " is not checked")
     return True
 
+
 def check_inputs_targets(inputs, targets=None, expected_inputs_dim=None, expected_targets_dim=None):
     """
     Checks if the input and target data is valid

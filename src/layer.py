@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Layer:
-    
+
     def __init__(self, input_dimension, num_unit, activation_func, weight_init_type, weight_init_range):
         """
         Initializes the layer
@@ -36,6 +36,7 @@ class Layer:
         partial_nets = [np.dot(input, self.weights[t]) for t in range(self.num_unit)] 
         self.nets = np.add(partial_nets, self.biases)
         return [self.activation.function(net) for net in self.nets]
+    
     
     def backward_pass(self, dErr_dOut):
         """
