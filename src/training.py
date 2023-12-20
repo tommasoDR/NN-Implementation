@@ -7,6 +7,7 @@ from functions import metric_functions
 import numpy as np
 import random
 import math
+import time
 
 class SGD():
 
@@ -14,7 +15,7 @@ class SGD():
                  minimum_learning_rate, momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda):
         
         parameters= {"loss_func": loss_function, "metric_function": metric_function, "learning_method": 'sgd', "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,"learning_rate_decay_func": learning_rate_decay_func,
-                     "learning_rate_decay_epochs": learning_rate_decay_epochs, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
+                     "learning_rate_decay_epochs": learning_rate_decay_epochs, "minimum_learning_rate": minimum_learning_rate, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
                      "regularization_func": regularization_func, "regularization_lambda": regularization_lambda}
         
         try:
@@ -51,7 +52,12 @@ class SGD():
             data_checks.check_inputs_targets(validation_set_inputs, validation_set_targets, self.network.input_dim, self.network.output_dim)
         except Exception as e:
             print(e); exit(1)
+
+        if minibatch_size == "all":
+            minibatch_size = len(training_set_inputs)
         
+        training_loss = np.zeros(epochs)
+        validation_loss = np.zeros(epochs)
         training_metric = np.zeros(epochs)
         validation_metric = np.zeros(epochs)
 
@@ -67,7 +73,7 @@ class SGD():
             for minibatch_index in range(math.ceil(len(training_set_inputs) / minibatch_size)):
                 mb_training_set_inputs, mb_training_set_targets = self.generate_minibatch(training_set_inputs, training_set_targets, minibatch_index, minibatch_size)
                 current_minibatch_size = len(mb_training_set_inputs)
-
+                
                 outputs_mb_train = [self.network.foward_pass(input) for input in mb_training_set_inputs]
 
                 gradients = nu.get_empty_gradients(self.network)
@@ -77,21 +83,29 @@ class SGD():
                     gradients = self.sum_gradients(gradients, new_gradients)
 
                 deltas = self.calculate_deltas(gradients, current_minibatch_size)
-                
+
                 current_regularization_lambda = self.regularization_lambda * current_minibatch_size / len(training_set_inputs)
+                
                 self.update_weights(deltas, old_deltas, current_regularization_lambda)
                 
                 old_deltas = deltas
 
             # calculate loss
-            outputs_traininig = [self.network.foward_pass(input) for input in training_set_inputs]
+            outputs_training = [self.network.foward_pass(input) for input in training_set_inputs]
             outputs_validation = [self.network.foward_pass(input) for input in validation_set_inputs]
 
+            for output, target in list(zip(outputs_training, training_set_targets)):
+                training_loss[epoch] += self.loss.function(output, target)
+            training_loss[epoch] /= len(training_set_inputs)
 
-            training_metric[epoch] = self.metric.function(outputs_traininig, training_set_targets)
+            for output, target in list(zip(outputs_validation, validation_set_targets)):
+                validation_loss[epoch] += self.loss.function(output, target)
+            validation_loss[epoch] /= len(validation_set_inputs)
+
+            training_metric[epoch] = self.metric.function(outputs_training, training_set_targets)
             validation_metric[epoch] = self.metric.function(outputs_validation, validation_set_targets)
             
-            print("Epoch: " + str(epoch) + " Training metric: " + str(training_metric[epoch]) + " Validation metric: " + str(validation_metric[epoch]))
+            print("Epoch: " + str(epoch) + " Training metric: " + str(training_metric[epoch]) + " Validation metric: " + str(validation_metric[epoch]) + "\n\tTraining loss: " + str(training_loss[epoch]) + " Validation loss: " + str(validation_loss[epoch]))
 
             # learning rate decay
             if self.learning_rate_decay:

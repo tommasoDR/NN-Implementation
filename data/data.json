@@ -6,6 +6,7 @@
         "hidden_activation_func": "relu",
         "output_activation_func": "identity",
         "loss_func": "mean_squared_error",
+        "metric_func": "binary_classification_accuracy",
 
         "learning_method": "SGD",
         "learning_rate": 0.01,
@@ -41,6 +42,10 @@
         "cross_entropy_error"
     ],
 
+    "metric_funcs": [
+        "binary_classification_accuracy"
+    ],
+
     "decay_functions": [
         "linear",
         "exponential"
@@ -51,7 +56,7 @@
     ],
 
     "learning_methods": [
-        "SGD"
+        "sgd"
     ],
 
     "weight_inits_type": [

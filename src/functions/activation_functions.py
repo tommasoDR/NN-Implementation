@@ -102,7 +102,7 @@ def ReLU_derivative(x):
     """
     Compute the derivative of ReLU function.
     """
-    return 0 if x < 0 else 1
+    return 0 if x <= 0 else 1
 
 
 activation_funcs = {

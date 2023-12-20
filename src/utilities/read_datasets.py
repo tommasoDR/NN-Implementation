@@ -3,39 +3,35 @@ import math
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
-
+import sys
 
 def read_monk(dataset, rescale=False):
 
     """
     Reads the monks datasets, creates the labels for supervised classification and hide them to the classifier.
-
     Possibility to rescale the labels to [-1, +1] instead of [0, +1]
 
     Return monk dataset and labels (as numpy ndarrays)
     """
 
-
     # Read the .csv file containing the data. The first line contains the list of attributes. The data is assigned to a Pandas dataframe.
     col_names = ['class', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6', 'Id']
     monk_dataset = pd.read_csv(f"../datasets/monks/{str(dataset)}", sep=" ", names=col_names)
     monk_dataset.set_index('Id', inplace=True)
-
-    # Labels creation - Dropping the "class" column from the Monk dataset: this represents the target y.
-    labels = monk_dataset['class']
-    monk_dataset.drop(columns=['class'], inplace=True)
-
-    # Transforming the labels into a numpy array and adding a flat dimension.
-    labels = pd.Series(labels).to_numpy()  
-    labels = np.expand_dims(labels, 1) 
+    labels = monk_dataset.pop('class')
 
     # One-Hot Encoding - Transforming the dataset into a numpy array and applying One-Hot Encoding to the categorical variables.
-    encoder = OneHotEncoder().fit(monk_dataset)
-    monk_dataset = encoder.transform(monk_dataset).toarray()
+    monk_dataset = OneHotEncoder().fit_transform(monk_dataset).toarray().astype(np.int8)
 
+    labels = labels.to_numpy()[:, np.newaxis]
     # if rescale is True, the class values are rescaled to [-1, 1] instead of [0, 1]
     if rescale:
         labels[labels == 0] = -1
+
+    # Shuffle the dataset
+    dataset = list(zip(monk_dataset, labels))
+    np.random.shuffle(dataset)
+    monk_dataset, labels = zip(*dataset)
 
     return monk_dataset, labels
 
@@ -46,7 +42,7 @@ def cup_data():
     """
     col_names = ['id', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6', 'col_7', 'col_8', 'col_9', 'col_10', 'target_x', 'target_y', 'target_z']
 
-    directory = "../../datasets/cup/"
+    directory = "../datasets/cup/"
     file = "ML-CUP23-TR.csv"    
 
     # Read training data and targets and test set from csv files 
@@ -62,10 +58,8 @@ def cup_data():
     cup_ts_data = cup_ts_data.to_numpy(dtype=np.float32)
 
     # Shuffle the dataset
-    indexes = list(range(tr_targets.shape[0]))
-    np.random.shuffle(indexes)
-    tr_data = tr_data[indexes]
-    tr_targets = tr_targets[indexes]
-
+    dataset = list(zip(tr_data, tr_targets))
+    np.random.shuffle(dataset)
+    tr_data, tr_targets = zip(*dataset)
 
     return tr_data, tr_targets, cup_ts_data

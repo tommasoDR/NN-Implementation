@@ -23,7 +23,7 @@ def binary_classification_accuracy(predictions, targets):
     """
     accuracy = 0
     for prediction, target in list(zip(predictions, targets)):
-        if prediction[0] <= 0.5:
+        if prediction[0] < 0.5:
             real_prediction = 0
         else:
             real_prediction = 1

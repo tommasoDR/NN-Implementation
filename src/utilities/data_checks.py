@@ -55,8 +55,6 @@ def check_parameters(parameters):
             if str(parameters[key]) not in weight_inits_type:
                 raise Exception("The weight initialization method is not valid")
         elif key == "weight_init_range":
-            if parameters[key][0] < 0:
-                raise Exception("The weight initialization range lower bound must be greater than 0")
             if parameters[key][1] < parameters[key][0]:
                 raise Exception("The weight initialization range upper bound must be greater than the lower bound")
         elif key == "learning_rate":
@@ -71,6 +69,8 @@ def check_parameters(parameters):
         elif key == "minimum_learning_rate":
             if parameters[key] <= 0:
                 raise Exception("The minimum learning rate must be greater than 0")
+            if parameters[key] > parameters["learning_rate"]:
+                raise Exception("The minimum learning rate must be less than the learning rate")
         elif key == "momentum":
             if parameters[key] < 0 or parameters[key] > 1:
                 raise Exception("The momentum must be between 0 and 1")
