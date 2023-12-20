@@ -5,7 +5,10 @@ def check_parameters(parameters):
     Checks if the parameters are valid
     :return: True if the parameters are valid, False otherwise
     """
-    f = open('../../data/data.json')
+    try:
+        f = open('../../data/data.json')
+    except Exception as e:
+        print(e); exit(1)
     
     _, activation_funcs, loss_funcs, decay_functions, regularization_func, learning_methods, weight_inits_type = json.load(f)
 

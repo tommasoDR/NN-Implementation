@@ -3,25 +3,25 @@ import numpy as np
 class Loss(): 
 
     def __init__(self, loss, loss_der, name):
-        self.__loss = loss
-        self.__loss_der = loss_der
-        self.__name = name
+        self.loss = loss
+        self.loss_der = loss_der
+        self.name = name
 
     @property
     def name(self):
-        return self.__name
+        return self.name
 
     @property
     def function(self):
-        return  self.__loss
+        return  self.loss
     
     @property
-    def function_der(self):
-        return self.__loss_der
+    def derivative(self):
+        return self.loss_der
 
 
 
-def ms_loss(predictions, targets): 
+def ms_loss(prediction, target): 
     """
     Calculate the Least Mean Square loss for all training examples.
 
@@ -30,12 +30,10 @@ def ms_loss(predictions, targets):
     :return: the result of the Least Mean Square loss between predictions and targets.
     """
 
-    m = len(targets)
-    sum_squared_diff = np.sum((predictions - targets) ** 2)
-    return (1 / (2 * m)) * sum_squared_diff
+    return 0.5 * np.sum(np.square(np.subtract(target, prediction)))
 
 
-def ms_loss_der(predictions, targets):
+def ms_loss_all_der(prediction, target):
     """
     Calculate the derivative of Least Mean Square loss for all training examples.
 
@@ -44,13 +42,11 @@ def ms_loss_der(predictions, targets):
     :return: the result of the derivative of Least Mean Square loss between predictions and targets.
     """
 
-    m = len(targets)
-    sum_squared_diff = (1 / m) * np.sum(predictions - targets)
-    return sum_squared_diff
+    return - np.subtract(target, prediction)
 
 
 
-def classification_loss(predictions, targets): 
+def binary_classification_loss(prediction, target): 
     """
     Calculate the Loss for classification.
 
@@ -58,18 +54,15 @@ def classification_loss(predictions, targets):
     :param target: the true output values.
     :return: the mean of number of different value between targets and predictions.
     """
-    m = len(targets)
-    diff_value = 0
-    for element1, element2 in zip(predictions, targets):
-        if element1 != element2:
-            diff_value = diff_value + 1
-    
-    return diff_value/m
+
+    if prediction != target:
+            return 1
+    return 0
 
 
 loss_funcs = {
-    "mean_square_loss": Loss(ms_loss, ms_loss_der, "Loss"),
-    "classification_loss": Loss(classification_loss, None, "Classification_Loss")
+    "mean_square_loss": Loss(ms_loss, ms_loss_all_der, "Loss"),
+    "classification_loss": Loss(binary_classification_loss, None, "Classification_Loss")
 }
 
 

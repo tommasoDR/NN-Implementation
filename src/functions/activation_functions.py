@@ -4,21 +4,21 @@ import numpy as np
 class Activation_function(): 
     
     def __init__(self, func, derivfunc, name):
-        self.__func = func
-        self.__name = name
-        self.__derivfunc = derivfunc
+        self.func = func
+        self.name = name
+        self.derivfunc = derivfunc
 
     @property
     def name(self):
-        return self.__name
+        return self.name
 
     @property
     def function(self):
-        return self.__func
+        return self.func
     
     @property
     def derivative(self): 
-        return self.__derivfunc
+        return self.derivfunc
 
 
 

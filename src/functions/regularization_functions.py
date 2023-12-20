@@ -3,21 +3,21 @@ import numpy as np
 class Regularizzation_function():
    
     def __init__(self, regularizer, regularizer_der, name):
-        self.__regularizer = regularizer
-        self.__regularizer_der = regularizer_der
-        self.__name = name
+        self.regularizer = regularizer
+        self.regularizer_der = regularizer_der
+        self.name = name
     
     @property
     def name(self):
-        return self.__name
+        return self.name
 
     @property
-    def regularizer(self): 
-        return self.__regularizer
+    def function(self): 
+        return self.regularizer
 
     @property
-    def regularizer_derivative(self):
-        return self.__regularizer_der
+    def derivative(self):
+        return self.regularizer_der
     
 
 def l2_regularizer(w, lambd): 
@@ -29,7 +29,7 @@ def l2_regularizer(w, lambd):
     :return: The penalty term for L2 regularization.
     """
 
-    return lambd * np.sqrt(np.sum(np.square(w)))
+    return lambd * np.sum(np.square(w), axis=1)
 
 
 def l2_regularizer_der(w, lambd): 

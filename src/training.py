@@ -1,4 +1,5 @@
 from utilities import data_checks
+from utilities import network_utilities as nu
 from functions import regularization_functions
 from functions import decay_functions
 from functions import loss_functions
@@ -61,14 +62,17 @@ class SGD():
             # iterates on minibatches
             for minibatch_index in range(math.ceil(len(training_set_inputs) / minibatch_size)):
                 mb_training_set_inputs, mb_training_set_targets = self.generate_minibatch(training_set_inputs, training_set_targets, minibatch_index, minibatch_size)
-                minibatch_size = len(mb_training_set_inputs)
+                current_minibatch_size = len(mb_training_set_inputs)
 
-                outputs_mb_train = [self.network.foward_pass(input) for input in mb_training_set_inputs]
+                outputs_mb_train = np.array([self.network.foward_pass(input) for input in mb_training_set_inputs])
 
-                dErr_dOut = self.loss.derivative(outputs_mb_train, mb_training_set_targets)
-                gradient = self.network.backpropagation(dErr_dOut)
+                gradients = nu.get_empty_gradients(self.network)
+                for output, target in list(zip(outputs_mb_train, mb_training_set_targets)):
+                    dErr_dOut = self.loss.derivative(output, target)
+                    new_gradients = self.network.backpropagation(dErr_dOut)
+                    gradients = self.sum_gradients(gradients, new_gradients)
 
-                deltas = self.calculate_deltas(gradient, minibatch_size)
+                deltas = self.calculate_deltas(gradients, current_minibatch_size)
                 
                 self.update_weights(deltas, old_deltas)
                 
@@ -98,12 +102,31 @@ class SGD():
         start = minibatch_index * minibatch_size
         end = start + minibatch_size
 
+        if end > len(training_set_inputs):
+            end = len(training_set_inputs)
+
         mb_training_set_inputs = [training_set_inputs[index] for index in range(start, end)]
         mb_training_set_targets = [training_set_targets[index] for index in range(start, end)]
         return mb_training_set_inputs, mb_training_set_targets
 
 
-    def calculate_deltas(self, gradient, minibatch_size):
+    def sum_gradients(self, gradients, new_gradients):
+        """
+        Sums the gradients of the network
+        :param gradients: The gradients of the network
+        :param new_gradients: The new gradients to add to the network
+        :return: The new gradients of the network
+        """
+        for layer_index in range(self.network.num_layers):
+            gradients_biases = gradients[layer_index][0]
+            gradients_w = gradients[layer_index][1]
+            new_gradients_biases = new_gradients[layer_index][0]
+            new_gradients_w = new_gradients[layer_index][1]
+            gradients[layer_index] = (np.add(gradients_biases, new_gradients_biases), np.add(gradients_w, new_gradients_w))
+        return gradients
+    
+
+    def calculate_deltas(self, gradients, current_minibatch_size):
         """
         Calculates the deltas of the network from the gradient
         :param gradient: The gradient of the network
@@ -111,8 +134,10 @@ class SGD():
         """
         deltas = []
         for layer_index in range(self.network.num_layers):
-            delta_biases = gradient[layer_index][0] / (-minibatch_size)
-            delta_w = gradient[layer_index][1] / (-minibatch_size)
+            gradients_biases = gradients[layer_index][0]
+            gradients_w = gradients[layer_index][1]
+            delta_biases = - gradients_biases / current_minibatch_size
+            delta_w = - gradients_w / current_minibatch_size
             deltas.append((delta_biases, delta_w))
         return deltas
 
@@ -128,7 +153,7 @@ class SGD():
             delta_w = deltas[layer_index][1]
             # regularization
             penalty_term_values = self.regularization.function(self.network.layers[layer_index].weights, self.regularization_lambda)
-            self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, penalty_term_values)
+            self.network.layers[layer_index].weights = np.subtract(self.network.layers[layer_index].weights, penalty_term_values)
             # update weights
             self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.learning_rate * delta_bias)
             self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.learning_rate * delta_w)      

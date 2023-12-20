@@ -1,5 +1,6 @@
 from utilities import data_checks
 from functions import loss_functions
+from functions import activation_functions
 from layer import Layer
 import numpy as np
 
@@ -19,8 +20,7 @@ class Network:
         self.output_dim = layer_sizes[-1]
         self.num_layers = num_layers
         self.layer_sizes = layer_sizes
-        self.hidden_activation_func = hidden_activation_funcs
-        self.output_activation_func = output_activation_func
+        self.layer_activation_funcs = hidden_activation_funcs + output_activation_func
         self.weight_init_type = weight_init_type
         self.weight_init_range = weight_init_range
 
@@ -32,10 +32,10 @@ class Network:
         except Exception as e:
             print(e); exit(1)
 
-        self.layer = []
+        self.layers = []
         layer_input_dimension = input_dimension
         for i in range(num_layers):
-            self.layers.append(Layer(input_dimension=layer_input_dimension, num_unit=layer_sizes[i], activation_func=hidden_activation_funcs[i], weight_init_type=weight_init_type, weight_init_range=weight_init_range))
+            self.layers.append(Layer(input_dimension=layer_input_dimension, num_unit=layer_sizes[i], activation_func=self.layer_activation_funcs[i], weight_init_type=weight_init_type, weight_init_range=weight_init_range))
             layer_input_dimension = layer_sizes[i]
 
     
@@ -45,22 +45,23 @@ class Network:
         :param input: The input of the network
         :return: The output of the output layer of the network
         """
-        outputs = input
+        output = input
         for layer in self.layers:
-            outputs = layer.forward_pass(outputs)
-        return outputs
+            output = layer.forward_pass(output)
+        return output
     
 
     def backpropagation(self, dErr_dOut):
         """
         Performs backpropagation
+        :param dErr_dOut: The derivative of the error with respect to the output of the network
         :return: The gradients of the network
         """
-        gradient = np.zeros((len(self.layers), 1))
+        gradients = np.zeros((len(self.layers), 1))
         for layer_index in reversed(range(len(self.layers))):
-            dErr_dOut, gradient_biases, gradient_w = self.layers[layer_index].backward_pass(dErr_dOut)
-            gradient[layer_index] = (gradient_biases, gradient_w)
-        return gradient
+            dErr_dOut, gradients_biases, gradients_w = self.layers[layer_index].backward_pass(dErr_dOut)
+            gradients[layer_index] = (gradients_biases, gradients_w)
+        return gradients
 
 
     def calculate_loss(self, inputs, targets, loss_function):
@@ -75,10 +76,14 @@ class Network:
             data_checks.check_inputs_targets(inputs, targets, self.input_dim, self.output_dim)
         except Exception as e:
             print(e); exit(1)
-        loss = loss_functions[loss_function]
-        loss_value = 0
+
+        loss = loss_functions.loss_funcs[loss_function]
+        
         outputs = self.foward_pass(inputs)
-        loss_value += loss.function(outputs, targets)
+
+        loss_value = 0
+        for output, target in list(zip(outputs, targets)):
+            loss_value += loss.function(output, target)
         return loss_value
     
     
@@ -92,6 +97,10 @@ class Network:
             data_checks.check_inputs_targets(inputs)
         except Exception as e:
             print(e); exit(1)
-        return self.foward_pass(inputs)
+
+        outputs = []
+        for input in inputs:
+            outputs.append(self.foward_pass(input))
+        return outputs
 
         
