@@ -6,67 +6,85 @@ def check_parameters(parameters):
     :return: True if the parameters are valid, False otherwise
     """
     try:
-        f = open('../../data/data.json')
+        f = open('../data/data.json')
     except Exception as e:
         print(e); exit(1)
     
-    _, activation_funcs, loss_funcs, decay_functions, regularization_func, learning_methods, weight_inits_type = json.load(f)
+    json_data = json.load(f)
 
-    for keys in parameters.keys():
-        if keys == "num_layers":
-            if parameters[keys] < 2:
+    activation_funcs = json_data["activation_funcs"]
+    loss_funcs = json_data["loss_funcs"]
+    metric_funcs = json_data["metric_funcs"]
+    regularization_func = json_data["regularization_func"]
+    learning_methods = json_data["learning_methods"]
+    weight_inits_type = json_data["weight_inits_type"]
+    decay_functions = json_data["decay_functions"]
+
+    for key in parameters.keys():
+        if key == "num_layers":
+            if parameters[key] < 2:
                 raise Exception("The number of layers must be greater than 1")
-        elif keys == "layer_sizes":
-            if len(parameters[keys]) != parameters["num_layers"]:
+        elif key == "layer_sizes":
+            if len(parameters[key]) != parameters["num_layers"]:
                 raise Exception("The number of layers and the number of layer sizes must be the same")
-            for layer_size in parameters[keys]:
+            for layer_size in parameters[key]:
                 if layer_size < 1:
                     raise Exception("The number of units in a layer must be greater than 0")
-        elif keys == "hidden_activation_funcs":
-            if len(parameters[keys]) != parameters["num_layers"] - 1:
+        elif key == "hidden_activation_funcs":
+            if len(parameters[key]) != parameters["num_layers"] - 1:
                 raise Exception("The number of hidden activation functions must be the number of hidden layers")
-            if parameters[keys] not in activation_funcs:
-                raise Exception("The hidden activation functions are not valid")
-        elif keys == "output_activation_func":
-            if parameters[keys] not in activation_funcs:
+            for activation_func in parameters[key]:
+                if str(activation_func) not in activation_funcs:
+                    raise Exception("The hidden activation functions are not valid")
+        elif key == "output_activation_func":
+            if str(parameters[key]) not in activation_funcs:
                 raise Exception("The output activation function is not valid")
-        elif keys == "loss_func":
-            if parameters[keys] not in loss_funcs:
+        elif key == "loss_func":
+            if str(parameters[key]) not in loss_funcs:
                 raise Exception("The loss function is not valid")
-        elif keys == "regularization_func":
-            if parameters[keys] not in regularization_func:
+        elif key == "metric_function":
+            if str(parameters[key]) not in metric_funcs:
+                raise Exception("The metric function is not valid")
+        elif key == "regularization_func":
+            if str(parameters[key]) not in regularization_func:
                 raise Exception("The regularization type is not valid")
-        elif keys == "learning_method":
-            if parameters[keys] not in learning_methods:
+        elif key == "learning_method":
+            if str(parameters[key]) not in learning_methods:
                 raise Exception("The learning method is not valid")
-        elif keys == "weight_init_type":
-            if parameters[keys] not in weight_inits_type:
+        elif key == "weight_init_type":
+            if str(parameters[key]) not in weight_inits_type:
                 raise Exception("The weight initialization method is not valid")
-        elif keys == "weight_init_range":
-            if parameters[keys][0] < 0:
+        elif key == "weight_init_range":
+            if parameters[key][0] < 0:
                 raise Exception("The weight initialization range lower bound must be greater than 0")
-            if parameters[keys][1] < parameters[keys][0]:
+            if parameters[key][1] < parameters[key][0]:
                 raise Exception("The weight initialization range upper bound must be greater than the lower bound")
-        elif keys == "learning_rate":
-            if parameters[keys] <= 0:
+        elif key == "learning_rate":
+            if parameters[key] <= 0:
                 raise Exception("The learning rate must be greater than 0")
-        elif keys == "learning_rate_decay_func":
-            if parameters[keys] not in decay_functions:
+        elif key == "learning_rate_decay":
+            if parameters[key] != True and parameters[key] != False:
+                raise Exception("The learning rate decay must be a boolean")
+        elif key == "learning_rate_decay_func":
+            if str(parameters[key]) not in decay_functions:
                 raise Exception("The learning rate decay function is not valid")
-        elif keys == "momentum":
-            if parameters[keys] < 0 or parameters[keys] > 1:
+        elif key == "minimum_learning_rate":
+            if parameters[key] <= 0:
+                raise Exception("The minimum learning rate must be greater than 0")
+        elif key == "momentum":
+            if parameters[key] < 0 or parameters[key] > 1:
                 raise Exception("The momentum must be between 0 and 1")
-        elif keys == "weight_decay":
-            if parameters[keys] < 0:
+        elif key == "weight_decay":
+            if parameters[key] < 0:
                 raise Exception("The weight decay must be greater or equal to 0")
-        elif keys == "minibatch_size":
-            if parameters[keys] < 1:
+        elif key == "minibatch_size":
+            if parameters[key] < 1:
                 raise Exception("The minibatch size must be greater than 0")
-        elif keys == "max_num_epochs":
-            if parameters[keys] < 1:
+        elif key == "max_num_epochs":
+            if parameters[key] < 1:
                 raise Exception("The max number of epochs must be greater than 0")
         else:
-            print("The parameter " + keys + " is not checked")
+            print("The parameter " + key + " is not checked")
     return True
 
 

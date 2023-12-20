@@ -4,21 +4,21 @@ import numpy as np
 class Activation_function(): 
     
     def __init__(self, func, derivfunc, name):
-        self.func = func
-        self.name = name
-        self.derivfunc = derivfunc
+        self.__func = func
+        self.__name = name
+        self.__derivfunc = derivfunc
 
     @property
     def name(self):
-        return self.name
+        return self.__name
 
     @property
     def function(self):
-        return self.func
+        return self.__func
     
     @property
     def derivative(self): 
-        return self.derivfunc
+        return self.__derivfunc
 
 
 
@@ -49,7 +49,7 @@ def identity_derivative(x):
     return 1
     
 
-def sigmoid(x, alpha):
+def sigmoid(x, alpha=1):
     """
     Compute the logistic function sigmoid.
 
@@ -61,7 +61,7 @@ def sigmoid(x, alpha):
     return 1 / (1 + np.exp(-(alpha*x)))
 
 
-def sigmoid_derivative(x, alpha):
+def sigmoid_derivative(x, alpha=1):
     """"
     Compute the derivative of logistic function sigmoid.
     """
@@ -69,7 +69,7 @@ def sigmoid_derivative(x, alpha):
     return alpha * sigmoid_x * (1 - sigmoid_x)
 
     
-def tanh(x, alpha): 
+def tanh(x, alpha=1): 
     """
     Compute the logistic function thanH.
 
@@ -80,7 +80,7 @@ def tanh(x, alpha):
     return math.tanh((alpha*x)/2)
 
 
-def tanh_derivative(x, alpha):
+def tanh_derivative(x, alpha=1):
     """"
     Compute the derivative of tanh function.
     """

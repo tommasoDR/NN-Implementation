@@ -18,7 +18,7 @@ def read_monk(dataset, rescale=False):
 
     # Read the .csv file containing the data. The first line contains the list of attributes. The data is assigned to a Pandas dataframe.
     col_names = ['class', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6', 'Id']
-    monk_dataset = pd.read_csv(f"../../datasets/monks/{str(dataset)}", sep=" ", names=col_names)
+    monk_dataset = pd.read_csv(f"../datasets/monks/{str(dataset)}", sep=" ", names=col_names)
     monk_dataset.set_index('Id', inplace=True)
 
     # Labels creation - Dropping the "class" column from the Monk dataset: this represents the target y.
@@ -36,12 +36,6 @@ def read_monk(dataset, rescale=False):
     # if rescale is True, the class values are rescaled to [-1, 1] instead of [0, 1]
     if rescale:
         labels[labels == 0] = -1
-
-    # Shuffle the dataset
-    indexes = list(range(len(monk_dataset)))
-    np.random.shuffle(indexes)
-    monk_dataset = monk_dataset[indexes]
-    labels = labels[indexes]
 
     return monk_dataset, labels
 

@@ -3,21 +3,21 @@ import numpy as np
 class Loss(): 
 
     def __init__(self, loss, loss_der, name):
-        self.loss = loss
-        self.loss_der = loss_der
-        self.name = name
+        self.__loss = loss
+        self.__loss_der = loss_der
+        self.__name = name
 
     @property
     def name(self):
-        return self.name
+        return self.__name
 
     @property
     def function(self):
-        return  self.loss
+        return  self.__loss
     
     @property
     def derivative(self):
-        return self.loss_der
+        return self.__loss_der
 
 
 
@@ -45,24 +45,8 @@ def ms_loss_all_der(prediction, target):
     return - np.subtract(target, prediction)
 
 
-
-def binary_classification_loss(prediction, target): 
-    """
-    Calculate the Loss for classification.
-
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the mean of number of different value between targets and predictions.
-    """
-
-    if prediction != target:
-            return 1
-    return 0
-
-
 loss_funcs = {
-    "mean_square_loss": Loss(ms_loss, ms_loss_all_der, "Loss"),
-    "classification_loss": Loss(binary_classification_loss, None, "Classification_Loss")
+    "mean_squared_error": Loss(ms_loss, ms_loss_all_der, "Loss")
 }
 
 

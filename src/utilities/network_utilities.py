@@ -19,5 +19,5 @@ def get_empty_gradients(network):
     """
     gradients = []
     for layer_index in range(network.num_layers):
-        gradients.append((np.zeros((network.layers[layer_index].num_unit, 1)), np.zeros((network.layers[layer_index].num_unit, network.layers[layer_index].input_dimension))))
+        gradients.append((np.zeros((network.layers[layer_index].num_unit)), np.zeros((network.layers[layer_index].num_unit, network.layers[layer_index].input_dimension))))
     return gradients

@@ -19,9 +19,9 @@ class Layer:
         self.weight_init_range = weight_init_range
 
         self.weights = nu.weights_init(self.weight_init_type, self.weight_init_range, self.num_unit, self.input_dimension)
-        self.biases = nu.weights_init(self.weight_init_type, self.weight_init_range, self.num_unit, 1)
+        self.biases = nu.weights_init(self.weight_init_type, self.weight_init_range, 1, self.num_unit)[0]
 
-        self.inputs = None
+        self.input = None
         self.nets = None
         self.outputs = None
 
@@ -32,10 +32,14 @@ class Layer:
         :param input: The input of the layer
         :return: The output of the layer
         """
-        self.inputs = input
-        partial_nets = np.array([np.dot(input, self.weights[t]) for t in range(self.num_unit)]) 
+        self.input = input
+        #print(input)
+        partial_nets = [np.dot(input, self.weights[t]) for t in range(self.num_unit)]
+        #print(partial_nets)
+        #print(self.biases)
         self.nets = np.add(partial_nets, self.biases)
-        return np.array([self.activation.function(net) for net in self.nets])
+        #print(self.nets)
+        return [self.activation.function(net) for net in self.nets]
     
     
     def backward_pass(self, dErr_dOut):
@@ -44,15 +48,21 @@ class Layer:
         :param delta: The delta of the next layer
         :return: The delta of the layer
         """
-        dOut_dNet = np.array([self.activation.derivative(net) for net in self.nets])
+        dOut_dNet = [self.activation.derivative(net) for net in self.nets]
         minus_delta = np.multiply(dErr_dOut, dOut_dNet)
         gradient_w = np.zeros((self.num_unit, self.input_dimension))
         gradient_biases = minus_delta
+  
         for t in range(self.num_unit):
             for u in range(self.input_dimension):
                 gradient_w[t][u] = minus_delta[t] * self.input[u]
 
-        new_dErr_dOut = [np.dot(minus_delta, self.weights[u]) for u in range(self.input_dimension)]
+        new_dErr_dOut = np.zeros(self.input_dimension)
+        for u in range(self.input_dimension):
+            value = 0
+            for t in range(self.num_unit):
+                value += minus_delta[t] * self.weights[t][u]
+            new_dErr_dOut[u] = value
 
         return new_dErr_dOut, gradient_biases, gradient_w
        

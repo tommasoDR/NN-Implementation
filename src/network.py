@@ -20,7 +20,7 @@ class Network:
         self.output_dim = layer_sizes[-1]
         self.num_layers = num_layers
         self.layer_sizes = layer_sizes
-        self.layer_activation_funcs = hidden_activation_funcs + output_activation_func
+        self.layer_activation_funcs = hidden_activation_funcs + [output_activation_func]
         self.weight_init_type = weight_init_type
         self.weight_init_range = weight_init_range
 
@@ -47,7 +47,7 @@ class Network:
         """
         output = input
         for layer in self.layers:
-            output = layer.forward_pass(output)
+            output = layer.foward_pass(output)
         return output
     
 
@@ -57,7 +57,7 @@ class Network:
         :param dErr_dOut: The derivative of the error with respect to the output of the network
         :return: The gradients of the network
         """
-        gradients = np.zeros((len(self.layers), 1))
+        gradients = [0]*len(self.layers)
         for layer_index in reversed(range(len(self.layers))):
             dErr_dOut, gradients_biases, gradients_w = self.layers[layer_index].backward_pass(dErr_dOut)
             gradients[layer_index] = (gradients_biases, gradients_w)

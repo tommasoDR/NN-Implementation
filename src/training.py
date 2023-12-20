@@ -3,16 +3,17 @@ from utilities import network_utilities as nu
 from functions import regularization_functions
 from functions import decay_functions
 from functions import loss_functions
+from functions import metric_functions
 import numpy as np
 import random
 import math
 
 class SGD():
 
-    def __init__(self, network, loss_function, learning_rate, learning_rate_decay_func, learning_rate_decay_epochs,
-                 momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda):
+    def __init__(self, network, loss_function, metric_function, learning_rate, learning_rate_decay, learning_rate_decay_func, learning_rate_decay_epochs,
+                 minimum_learning_rate, momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda):
         
-        parameters= {"loss_func": loss_function, "learning_method": 'sgd', "learning_rate": learning_rate, "learning_rate_decay_func": learning_rate_decay_func,
+        parameters= {"loss_func": loss_function, "metric_function": metric_function, "learning_method": 'sgd', "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,"learning_rate_decay_func": learning_rate_decay_func,
                      "learning_rate_decay_epochs": learning_rate_decay_epochs, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
                      "regularization_func": regularization_func, "regularization_lambda": regularization_lambda}
         
@@ -23,8 +24,11 @@ class SGD():
 
         self.network = network
         self.loss = loss_functions.loss_funcs[loss_function]
+        self.metric = metric_functions.metric_funcs[metric_function]
         self.starting_learning_rate = learning_rate
         self.learning_rate = learning_rate
+        self.learning_rate_decay = learning_rate_decay
+        self.minimum_learning_rate = minimum_learning_rate
         self.decay = decay_functions.decay_funcs[learning_rate_decay_func]
         self.learning_rate_decay_epochs = learning_rate_decay_epochs
         self.momentum_alpha = momentum_alpha
@@ -48,8 +52,8 @@ class SGD():
         except Exception as e:
             print(e); exit(1)
         
-        training_errors = np.zeros((epochs, 1))
-        validation_errors = np.zeros((epochs, 1))
+        training_metric = np.zeros(epochs)
+        validation_metric = np.zeros(epochs)
 
         old_deltas = None
         for epoch in range(epochs):
@@ -64,7 +68,7 @@ class SGD():
                 mb_training_set_inputs, mb_training_set_targets = self.generate_minibatch(training_set_inputs, training_set_targets, minibatch_index, minibatch_size)
                 current_minibatch_size = len(mb_training_set_inputs)
 
-                outputs_mb_train = np.array([self.network.foward_pass(input) for input in mb_training_set_inputs])
+                outputs_mb_train = [self.network.foward_pass(input) for input in mb_training_set_inputs]
 
                 gradients = nu.get_empty_gradients(self.network)
                 for output, target in list(zip(outputs_mb_train, mb_training_set_targets)):
@@ -74,7 +78,8 @@ class SGD():
 
                 deltas = self.calculate_deltas(gradients, current_minibatch_size)
                 
-                self.update_weights(deltas, old_deltas)
+                current_regularization_lambda = self.regularization_lambda * current_minibatch_size / len(training_set_inputs)
+                self.update_weights(deltas, old_deltas, current_regularization_lambda)
                 
                 old_deltas = deltas
 
@@ -82,12 +87,15 @@ class SGD():
             outputs_traininig = [self.network.foward_pass(input) for input in training_set_inputs]
             outputs_validation = [self.network.foward_pass(input) for input in validation_set_inputs]
 
-            training_errors[epoch] = self.loss.function(outputs_traininig, training_set_targets)
-            validation_errors[epoch] = self.loss.function(outputs_validation, validation_set_targets)
+
+            training_metric[epoch] = self.metric.function(outputs_traininig, training_set_targets)
+            validation_metric[epoch] = self.metric.function(outputs_validation, validation_set_targets)
+            
+            print("Epoch: " + str(epoch) + " Training metric: " + str(training_metric[epoch]) + " Validation metric: " + str(validation_metric[epoch]))
 
             # learning rate decay
             if self.learning_rate_decay:
-                self.learning_rate = self.decay.function(self.starting_learning_rate, epoch, self.learning_rate_decay_epochs)
+                self.learning_rate = self.decay.function(self.starting_learning_rate, self.minimum_learning_rate, epoch, self.learning_rate_decay_epochs)
 
 
     def generate_minibatch(self, training_set_inputs, training_set_targets, minibatch_index, minibatch_size):
@@ -142,7 +150,7 @@ class SGD():
         return deltas
 
 
-    def update_weights(self, deltas, old_deltas):
+    def update_weights(self, deltas, old_deltas, current_regularization_lambda):
         """
         Updates the weights of the network
         :param gradient: The gradient of the network
@@ -152,15 +160,15 @@ class SGD():
             delta_bias = deltas[layer_index][0]
             delta_w = deltas[layer_index][1]
             # regularization
-            penalty_term_values = self.regularization.function(self.network.layers[layer_index].weights, self.regularization_lambda)
+            penalty_term_values = self.regularization.derivative(self.network.layers[layer_index].weights, current_regularization_lambda)
             self.network.layers[layer_index].weights = np.subtract(self.network.layers[layer_index].weights, penalty_term_values)
             # update weights
             self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.learning_rate * delta_bias)
             self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.learning_rate * delta_w)      
             # momentum
-            old_delta_bias = old_deltas[layer_index][0]
-            old_delta_w = old_deltas[layer_index][1]
             if old_deltas is not None:
+                old_delta_bias = old_deltas[layer_index][0]
+                old_delta_w = old_deltas[layer_index][1]
                 self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.momentum_alpha * old_delta_bias)
                 self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.momentum_alpha * old_delta_w)
             

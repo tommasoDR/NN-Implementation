@@ -3,21 +3,21 @@ import numpy as np
 class Regularizzation_function():
    
     def __init__(self, regularizer, regularizer_der, name):
-        self.regularizer = regularizer
-        self.regularizer_der = regularizer_der
-        self.name = name
+        self.__regularizer = regularizer
+        self.__regularizer_der = regularizer_der
+        self.__name = name
     
     @property
     def name(self):
-        return self.name
+        return self.__name
 
     @property
     def function(self): 
-        return self.regularizer
+        return self.__regularizer
 
     @property
     def derivative(self):
-        return self.regularizer_der
+        return self.__regularizer_der
     
 
 def l2_regularizer(w, lambd): 
