@@ -7,7 +7,7 @@ import numpy as np
 
 class Network:
 
-    def __init__(self, input_dimension, num_layers, layer_sizes, hidden_activation_funcs, output_activation_func, weight_init_type, weight_init_range):
+    def __init__(self, input_dimension, num_layers, layer_sizes, hidden_activation_funcs, output_activation_func, weight_init_type, weight_init_range=None):
         """
         Initializes the network
         :param input_dimension: The dimension of the input

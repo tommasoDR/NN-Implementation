@@ -18,8 +18,8 @@ class Layer:
         self.weight_init_type = weight_init_type
         self.weight_init_range = weight_init_range
 
-        self.weights = nu.weights_init(self.weight_init_type, self.weight_init_range, self.num_unit, self.input_dimension)
-        self.biases = nu.weights_init(self.weight_init_type, self.weight_init_range, 1, self.num_unit)[0]
+        self.weights = nu.weights_init(self.num_unit, self.input_dimension, self.weight_init_type, self.weight_init_range)
+        self.biases = nu.weights_init(1, self.num_unit, self.weight_init_type, self.weight_init_range)[0]
 
         self.input = None
         self.nets = None
@@ -33,12 +33,8 @@ class Layer:
         :return: The output of the layer
         """
         self.input = input
-        #print(input)
         partial_nets = [np.dot(input, self.weights[t]) for t in range(self.num_unit)]
-        #print(partial_nets)
-        #print(self.biases)
         self.nets = np.add(partial_nets, self.biases)
-        #print(self.nets)
         return [self.activation.function(net) for net in self.nets]
     
     

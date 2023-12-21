@@ -19,17 +19,7 @@ class Activation_function():
     @property
     def derivative(self): 
         return self.__derivfunc
-
-
-
-def threshold(x): 
-    """"
-    Compute the threshold function.
-
-    :param x: a value (net).
-    :return: the result of threshold function applied to x.
-    """
-    return np.sign(x)
+    
 
 
 def identity(x): 
@@ -105,10 +95,27 @@ def ReLU_derivative(x):
     return 0 if x <= 0 else 1
 
 
+def leaky_ReLU(x):
+    """
+    Compute the leaky ReLU function.
+
+    :param x: a value (net).
+    :return: the result of the leaky ReLU function applied to x.
+    """
+    return max(0.01*x, x)
+
+
+def leaky_ReLU_derivative(x):
+    """
+    Compute the derivative of leaky ReLU function.
+    """
+    return 0.01 if x <= 0 else 1
+
+
 activation_funcs = {
     'identity': Activation_function(identity, identity_derivative, 'Identity'),
-    'relu': Activation_function(ReLU, ReLU_derivative, 'ReLU'),
     'sigmoid': Activation_function(sigmoid, sigmoid_derivative, 'Sigmoid'),
     'tanh': Activation_function(tanh, tanh_derivative, 'Tanh'),
-    'threshold': Activation_function(threshold, None, 'Threshold')
+    'relu': Activation_function(ReLU, ReLU_derivative, 'ReLU'),
+    'leaky_relu': Activation_function(leaky_ReLU, leaky_ReLU_derivative, 'Leaky ReLU'),
 }

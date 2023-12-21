@@ -21,21 +21,24 @@ class Loss():
 
 
 
-def ms_loss(prediction, target): 
+def ms_error(predictions, targets): 
     """
-    Calculate the Least Mean Square loss for all training examples.
+    Calculate the Mean Square Error for all training examples.
 
     :param predicted: the values predicted by the neural network.
     :param target: the true output values.
     :return: the result of the Least Mean Square loss between predictions and targets.
     """
+    m = len(predictions)
+    squared_error = 0
+    for prediction, target in zip(predictions, targets):
+        squared_error += 0.5 * np.sum(np.square(np.subtract(target, prediction)))
+    return squared_error / m
 
-    return 0.5 * np.sum(np.square(np.subtract(target, prediction)))
 
-
-def ms_loss_all_der(prediction, target):
+def ms_error_all_der(prediction, target):
     """
-    Calculate the derivative of Least Mean Square loss for all training examples.
+    Calculate the derivative of Mean Square error for all training examples.
 
     :param predicted: the values predicted by the neural network.
     :param target: the true output values.
@@ -45,8 +48,36 @@ def ms_loss_all_der(prediction, target):
     return - np.subtract(target, prediction)
 
 
+def mean_euclidean_error(predictions, targets): 
+    """
+    Calculate the Euclidean loss for all training examples.
+
+    :param predicted: the values predicted by the neural network.
+    :param target: the true output values.
+    :return: the result of the Euclidean loss between predictions and targets.
+    """
+    m = len(predictions)
+    euclidean_error = 0
+    for prediction, target in zip(predictions, targets):
+        euclidean_error += np.sqrt(np.sum(np.square(np.subtract(target, prediction))))
+    return euclidean_error / m
+
+
+def mean_euclidean_error_all_der(prediction, target):
+    """
+    Calculate the derivative of Euclidean loss for all training examples.
+
+    :param predicted: the values predicted by the neural network.
+    :param target: the true output values.
+    :return: the result of the derivative of Euclidean loss between predictions and targets.
+    """
+
+    return - np.subtract(target, prediction) / np.linalg.norm((target-prediction), ord=2)#np.sqrt(np.sum(np.square(np.subtract(target, prediction))))
+
+
 loss_funcs = {
-    "mean_squared_error": Loss(ms_loss, ms_loss_all_der, "Loss")
+    "mean_squared_error": Loss(ms_error, ms_error_all_der, "MS"),
+    "mean_euclidean_error": Loss(mean_euclidean_error, mean_euclidean_error_all_der, "MER")
 }
 
 

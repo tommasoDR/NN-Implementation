@@ -1,5 +1,6 @@
 from utilities import data_checks
 from utilities import network_utilities as nu
+from utilities import stats_utilities as su  
 from functions import regularization_functions
 from functions import decay_functions
 from functions import loss_functions
@@ -7,7 +8,7 @@ from functions import metric_functions
 import numpy as np
 import random
 import math
-import time
+
 
 class SGD():
 
@@ -38,7 +39,7 @@ class SGD():
         self.regularization_lambda = regularization_lambda
 
     
-    def training(self, training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, epochs, minibatch_size):
+    def training(self, training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, epochs, minibatch_size, plot = False):
         """
         Trains the network
         :param training_set: The training set
@@ -73,43 +74,47 @@ class SGD():
             for minibatch_index in range(math.ceil(len(training_set_inputs) / minibatch_size)):
                 mb_training_set_inputs, mb_training_set_targets = self.generate_minibatch(training_set_inputs, training_set_targets, minibatch_index, minibatch_size)
                 current_minibatch_size = len(mb_training_set_inputs)
-                
-                outputs_mb_train = [self.network.foward_pass(input) for input in mb_training_set_inputs]
+
+                # nesterov momentum
+                if self.nesterov_momentum and old_deltas is not None:
+                    old_weights = nu.get_weights(self.network)
+                    self.apply_nesterov_momentum(old_deltas)
 
                 gradients = nu.get_empty_gradients(self.network)
-                for output, target in list(zip(outputs_mb_train, mb_training_set_targets)):
+                for input, target in list(zip(mb_training_set_inputs, mb_training_set_targets)):
+                    output = self.network.foward_pass(input)
                     dErr_dOut = self.loss.derivative(output, target)
                     new_gradients = self.network.backpropagation(dErr_dOut)
                     gradients = self.sum_gradients(gradients, new_gradients)
 
                 deltas = self.calculate_deltas(gradients, current_minibatch_size)
-
+                
+                if self.nesterov_momentum and old_deltas is not None:
+                    nu.restore_weights(self.network, old_weights)
+                
                 current_regularization_lambda = self.regularization_lambda * current_minibatch_size / len(training_set_inputs)
                 
                 self.update_weights(deltas, old_deltas, current_regularization_lambda)
                 
                 old_deltas = deltas
 
-            # calculate loss
+            # calculate loss and metric
             outputs_training = [self.network.foward_pass(input) for input in training_set_inputs]
             outputs_validation = [self.network.foward_pass(input) for input in validation_set_inputs]
 
-            for output, target in list(zip(outputs_training, training_set_targets)):
-                training_loss[epoch] += self.loss.function(output, target)
-            training_loss[epoch] /= len(training_set_inputs)
+            training_loss[epoch] = self.loss.function(outputs_training, training_set_targets)
+            validation_loss[epoch] = self.loss.function(outputs_validation, validation_set_targets)
 
-            for output, target in list(zip(outputs_validation, validation_set_targets)):
-                validation_loss[epoch] += self.loss.function(output, target)
-            validation_loss[epoch] /= len(validation_set_inputs)
-
-            training_metric[epoch] = self.metric.function(outputs_training, training_set_targets)
-            validation_metric[epoch] = self.metric.function(outputs_validation, validation_set_targets)
+            training_metric[epoch] = self.metric.function(outputs_training, training_set_targets, self.network.layers[-1].activation.name)
+            validation_metric[epoch] = self.metric.function(outputs_validation, validation_set_targets, self.network.layers[-1].activation.name)
             
             print("Epoch: " + str(epoch) + " Training metric: " + str(training_metric[epoch]) + " Validation metric: " + str(validation_metric[epoch]) + "\n\tTraining loss: " + str(training_loss[epoch]) + " Validation loss: " + str(validation_loss[epoch]))
 
-            # learning rate decay
             if self.learning_rate_decay:
                 self.learning_rate = self.decay.function(self.starting_learning_rate, self.minimum_learning_rate, epoch, self.learning_rate_decay_epochs)
+
+        if plot:
+            su.plot_results(training_loss, validation_loss, training_metric, validation_metric, self.loss.name, self.metric.name)
 
 
     def generate_minibatch(self, training_set_inputs, training_set_targets, minibatch_index, minibatch_size):
@@ -158,8 +163,8 @@ class SGD():
         for layer_index in range(self.network.num_layers):
             gradients_biases = gradients[layer_index][0]
             gradients_w = gradients[layer_index][1]
-            delta_biases = - gradients_biases / current_minibatch_size
-            delta_w = - gradients_w / current_minibatch_size
+            delta_biases = self.learning_rate * (- gradients_biases / current_minibatch_size)
+            delta_w = self.learning_rate * (- gradients_w / current_minibatch_size)
             deltas.append((delta_biases, delta_w))
         return deltas
 
@@ -167,7 +172,9 @@ class SGD():
     def update_weights(self, deltas, old_deltas, current_regularization_lambda):
         """
         Updates the weights of the network
-        :param gradient: The gradient of the network
+        :param gradient: the delta of the network
+        :param old_deltas: The deltas of the previous epoch
+        :param current_regularization_lambda: The regularization lambda of the current epoch
         :return: None
         """
         for layer_index in range(self.network.num_layers):
@@ -177,8 +184,8 @@ class SGD():
             penalty_term_values = self.regularization.derivative(self.network.layers[layer_index].weights, current_regularization_lambda)
             self.network.layers[layer_index].weights = np.subtract(self.network.layers[layer_index].weights, penalty_term_values)
             # update weights
-            self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.learning_rate * delta_bias)
-            self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.learning_rate * delta_w)      
+            self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, delta_bias)
+            self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, delta_w)      
             # momentum
             if old_deltas is not None:
                 old_delta_bias = old_deltas[layer_index][0]
@@ -186,7 +193,19 @@ class SGD():
                 self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.momentum_alpha * old_delta_bias)
                 self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.momentum_alpha * old_delta_w)
             
-             
+
+    def apply_nesterov_momentum(self, old_deltas):
+        """
+        Applies the nesterov momentum to the weights of the network
+        :param old_deltas: The deltas of the previous epoch
+        :return: None
+        """
+        for layer_index in range(self.network.num_layers):
+            old_delta_bias = old_deltas[layer_index][0]
+            old_delta_w = old_deltas[layer_index][1]
+            self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.momentum_alpha * old_delta_bias)
+            self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.momentum_alpha * old_delta_w)
+
 learning_methods = {
     'sgd': SGD
 }

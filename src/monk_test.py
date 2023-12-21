@@ -1,24 +1,25 @@
-from utilities import read_datasets
+from utilities import datasets_utilities
 from network import Network
 from training import learning_methods
 
 
 if __name__ == '__main__':
     # Read the datasets
-    inputs, targets = read_datasets.read_monk("monks-1.train")
+    inputs, targets = datasets_utilities.read_monk("monks-1.train", rescale=True)
 
     # Split the datasets
-    training_set_inputs, training_set_targets = inputs[0:100], targets[0:100]
-    validation_set_inputs, validation_set_targets = inputs[101:], targets[101:]
+    training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.15)
+    print(len(training_set_inputs))
+    print(len(validation_set_inputs))
 
     net_parameters = {
         "input_dimension": 17,
         "num_layers": 2,
         "layer_sizes": [4, 1],
         "hidden_activation_funcs": ["relu"],
-        "output_activation_func": "sigmoid",
-        "weight_init_type": "random_uniform",
-        "weight_init_range": [-0.7, 0.7]
+        "output_activation_func": "tanh",
+        "weight_init_type": "glorot_bengio",
+        #"weight_init_range": [-0.7, 0.7]
     }
 
     # Create the network
@@ -29,8 +30,8 @@ if __name__ == '__main__':
         "network": network,
         "loss_function": "mean_squared_error",
         "metric_function": "binary_classification_accuracy",
-        "learning_rate": 0.1,
-        "learning_rate_decay": True,
+        "learning_rate": 0.8,
+        "learning_rate_decay": False,
         "learning_rate_decay_func": "linear",
         "learning_rate_decay_epochs": 1000,
         "minimum_learning_rate": 0.1,
@@ -42,5 +43,5 @@ if __name__ == '__main__':
 
     training_istance = learning_methods["sgd"](**train_parameters)
     
-    training_istance.training(training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, 1000, 1)
+    training_istance.training(training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, 1000, "all")
 

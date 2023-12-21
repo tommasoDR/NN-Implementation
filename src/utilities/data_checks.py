@@ -54,7 +54,11 @@ def check_parameters(parameters):
         elif key == "weight_init_type":
             if str(parameters[key]) not in weight_inits_type:
                 raise Exception("The weight initialization method is not valid")
+            if parameters[key] == "random_uniform" and parameters["weight_init_range"] is None:
+                raise Exception("The weight initialization range must be specified for random uniform initialization")
         elif key == "weight_init_range":
+            if parameters[key] is None:
+                continue
             if parameters[key][1] < parameters[key][0]:
                 raise Exception("The weight initialization range upper bound must be greater than the lower bound")
         elif key == "learning_rate":
@@ -66,14 +70,20 @@ def check_parameters(parameters):
         elif key == "learning_rate_decay_func":
             if str(parameters[key]) not in decay_functions:
                 raise Exception("The learning rate decay function is not valid")
+        elif key == "learning_rate_decay_epochs":
+            if parameters[key] < 1:
+                raise Exception("The learning rate decay epochs must be greater than 0")
         elif key == "minimum_learning_rate":
             if parameters[key] <= 0:
                 raise Exception("The minimum learning rate must be greater than 0")
             if parameters[key] > parameters["learning_rate"]:
                 raise Exception("The minimum learning rate must be less than the learning rate")
-        elif key == "momentum":
-            if parameters[key] < 0 or parameters[key] > 1:
-                raise Exception("The momentum must be between 0 and 1")
+        elif key == "momentum_alpha":
+            if parameters[key] < 0:
+                raise Exception("The momentum alpha must be greater or equal to 0")
+        elif key == "nesterov_momentum":
+            if parameters[key] != True and parameters[key] != False:
+                raise Exception("The nesterov momentum must be a boolean")
         elif key == "weight_decay":
             if parameters[key] < 0:
                 raise Exception("The weight decay must be greater or equal to 0")
@@ -83,6 +93,9 @@ def check_parameters(parameters):
         elif key == "max_num_epochs":
             if parameters[key] < 1:
                 raise Exception("The max number of epochs must be greater than 0")
+        elif key == "regularization_lambda":
+            if parameters[key] < 0:
+                raise Exception("The regularization lambda must be greater or equal to 0")
         else:
             print("The parameter " + key + " is not checked")
     return True
