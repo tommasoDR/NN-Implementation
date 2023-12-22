@@ -28,9 +28,7 @@ def read_monk(dataset, rescale=False):
         labels[labels == 0] = -1
 
     # Shuffle the dataset
-    dataset = list(zip(monk_dataset, labels))
-    np.random.shuffle(dataset)
-    monk_dataset, labels = zip(*dataset)
+    monk_dataset, labels = shuffle(monk_dataset, labels)
 
     return monk_dataset, labels
 
@@ -57,11 +55,14 @@ def read_cup():
     cup_ts_data = cup_ts_data.to_numpy(dtype=np.float32)
 
     # Shuffle the dataset
-    dataset = list(zip(tr_data, tr_targets))
-    np.random.shuffle(dataset)
-    tr_data, tr_targets = zip(*dataset)
+    tr_data, tr_targets = shuffle(tr_data, tr_targets)
 
     return tr_data, tr_targets, cup_ts_data
+
+
+def shuffle(inputs, targets):
+    indexes = np.random.permutation(len(inputs))
+    return inputs[indexes], targets[indexes]
 
 
 def split_dataset(dataset_inputs, dataset_targets, validation_percentage, test=False, test_percentage=0):

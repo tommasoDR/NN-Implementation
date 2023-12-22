@@ -15,9 +15,8 @@ if __name__ == '__main__':
     net_parameters = {
         "input_dimension": 17,
         "num_layers": 2,
-        "layer_sizes": [4, 1],
-        "hidden_activation_funcs": ["relu"],
-        "output_activation_func": "tanh",
+        "layers_sizes": [4, 1],
+        "layers_activation_funcs": ["relu", "tanh"],
         "weight_init_type": "glorot_bengio",
         #"weight_init_range": [-0.7, 0.7]
     }
@@ -28,13 +27,13 @@ if __name__ == '__main__':
     # Train the network
     train_parameters = {
         "network": network,
-        "loss_function": "mean_squared_error",
+        "loss_function": "squared_error",
         "metric_function": "binary_classification_accuracy",
         "learning_rate": 0.8,
         "learning_rate_decay": False,
         "learning_rate_decay_func": "linear",
         "learning_rate_decay_epochs": 1000,
-        "minimum_learning_rate": 0.1,
+        "min_learning_rate": 0.1,
         "momentum_alpha": 0.5,
         "nesterov_momentum": False,
         "regularization_func": "L2",

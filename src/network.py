@@ -7,47 +7,48 @@ import numpy as np
 
 class Network:
 
-    def __init__(self, input_dimension, num_layers, layer_sizes, hidden_activation_funcs, output_activation_func, weight_init_type, weight_init_range=None):
+    def __init__(self, input_dimension, num_layers, layers_sizes, layers_activation_funcs, weight_init_type, weight_init_range=None):
         """
         Initializes the network
         :param input_dimension: The dimension of the input
         :param num_layers: The number of layers in the network (excluding the input layer)
-        :param layer_sizes: The number of units in each layer (excluding the input layer)
-        :param hidden_activation_funcs: The activation functions for each hidden layer
+        :param layers_sizes: The number of units in each layer (excluding the input layer)
+        :param layers_activation_funcs: The activation functions for each hidden layer
         :param output_activation_func: The activation function for the output layer
         """
         self.input_dim = input_dimension
-        self.output_dim = layer_sizes[-1]
+        self.output_dim = layers_sizes[-1]
         self.num_layers = num_layers
-        self.layer_sizes = layer_sizes
-        self.layer_activation_funcs = hidden_activation_funcs + [output_activation_func]
+        self.layer_sizes = layers_sizes
+        self.layers_activation_funcs = layers_activation_funcs
         self.weight_init_type = weight_init_type
         self.weight_init_range = weight_init_range
 
         try:
-            self.parameters = {"num_layers": num_layers, "layer_sizes": layer_sizes, "hidden_activation_funcs": hidden_activation_funcs,
-                            "output_activation_func": output_activation_func, "weight_init_type": weight_init_type, "weight_init_range": weight_init_range}
-            data_checks.check_parameters(self.parameters)
+            self.parameters = {"num_layers": num_layers, "layers_sizes": layers_sizes, "layers_activation_funcs": layers_activation_funcs,
+                                "weight_init_type": weight_init_type, "weight_init_range": weight_init_range}
+            data_checks.check_param(self.parameters)
         except Exception as e:
             print(e); exit(1)
 
         self.layers = []
-        layer_input_dimension = input_dimension
+        layer_input_dim = input_dimension
         for i in range(self.num_layers):
-            self.layers.append(Layer(input_dimension=layer_input_dimension, num_unit=layer_sizes[i], activation_func=self.layer_activation_funcs[i], weight_init_type=weight_init_type, weight_init_range=weight_init_range))
-            layer_input_dimension = layer_sizes[i]
+            self.layers.append(Layer(input_dim=layer_input_dim, num_unit=layers_sizes[i], activation_func=layers_activation_funcs[i], 
+                                     weight_init_type=weight_init_type, weight_init_range=weight_init_range))
+            layer_input_dim = layers_sizes[i]
 
     
-    def foward_pass(self, input):
+    def foward_pass(self, inputs):
         """
         Performs a forward pass through the network
         :param input: The input of the network
         :return: The output of the output layer of the network
         """
-        output = input
+        outputs = inputs
         for layer in self.layers:
-            output = layer.foward_pass(output)
-        return output
+            outputs = layer.foward_pass(outputs)
+        return outputs
     
 
     def backpropagation(self, dErr_dOut):
@@ -56,11 +57,8 @@ class Network:
         :param dErr_dOut: The derivative of the error with respect to the output of the network
         :return: The gradients of the network
         """
-        gradients = [None]*self.num_layers
-        for layer_index in reversed(range(self.num_layers)):
-            dErr_dOut, gradients_biases, gradients_w = self.layers[layer_index].backward_pass(dErr_dOut)
-            gradients[layer_index] = (gradients_biases, gradients_w)
-        return gradients
+        for layer in reversed(self.layers):
+            dErr_dOut = layer.backward_pass(dErr_dOut)
 
 
     def calculate_loss(self, inputs, targets, loss_function):
@@ -72,18 +70,14 @@ class Network:
         :return: The loss of the network
         """
         try:
-            data_checks.check_inputs_targets(inputs, targets, self.input_dim, self.output_dim)
+            data_checks.check_sets(inputs, self.input_dim, targets, self.output_dim)
         except Exception as e:
             print(e); exit(1)
 
         loss = loss_functions.loss_funcs[loss_function]
-        
-        outputs = np.array([self.foward_pass(input) for input in inputs])
+        outputs = self.forward_pass(inputs)
 
-        loss_value = 0
-        for output, target in list(zip(outputs, targets)):
-            loss_value += loss.function(output, target)
-        return loss_value
+        return loss.function(outputs, targets)
     
     
     def calculate_outputs(self, inputs):
@@ -93,13 +87,8 @@ class Network:
         :return: The outputs of the network
         """
         try:
-            data_checks.check_inputs_targets(inputs)
+            data_checks.check_sets(inputs, self.input_dim)
         except Exception as e:
             print(e); exit(1)
 
-        outputs = []
-        for input in inputs:
-            outputs.append(self.foward_pass(input))
-        return outputs
-
-        
+        return self.foward_pass(inputs)

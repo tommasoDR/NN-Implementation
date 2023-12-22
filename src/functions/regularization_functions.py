@@ -28,7 +28,6 @@ def l2_regularizer(w, lambd):
     :param lambd: Hyperparameter.
     :return: The penalty term for L2 regularization.
     """
-
     return lambd * np.sum(np.square(w), axis=1)
 
 
@@ -40,9 +39,7 @@ def l2_regularizer_der(w, lambd):
     :param lambd: Hyperparameter.
     :return: The derivative of penalty term for L2 regularization.
     """ 
-
-    penalty_term = lambd * w
-    return penalty_term
+    return lambd * w
 
 
 regularization_funcs = {

@@ -17,7 +17,7 @@ class Metric():
 
 def binary_classification_accuracy(predictions, targets, output_func): 
     """
-    Calculate the Loss for classification.
+    Calculate the accuracy for classification.
 
     :param predicted: the values predicted by the neural network.
     :param target: the true output values.
@@ -51,32 +51,24 @@ def ms_error(predictions, targets, _):
 
     :param predicted: the values predicted by the neural network.
     :param target: the true output values.
-    :return: the result of the Least Mean Square loss between predictions and targets.
+    :return: the result of the Least Mean Square error between predictions and targets.
     """
-    m = len(predictions)
-    squared_error = 0
-    for prediction, target in zip(predictions, targets):
-        squared_error += np.sum(np.square(np.subtract(target, prediction)))
-    return squared_error / m
+    return np.mean(np.sum(np.square(np.subtract(targets, predictions)), axis=1), axis=0)
 
 
 def mean_euclidean_error(predictions, targets, _): 
     """
-    Calculate the Euclidean loss for all training examples.
+    Calculate the Euclidean error for all training examples.
 
     :param predicted: the values predicted by the neural network.
     :param target: the true output values.
-    :return: the result of the Euclidean loss between predictions and targets.
+    :return: the result of the Euclidean error between predictions and targets.
     """
-    m = len(predictions)
-    euclidean_error = 0
-    for prediction, target in list(zip(predictions, targets)):
-        euclidean_error += np.sqrt(np.sum(np.square(np.subtract(target, prediction))))
-    return euclidean_error / m
+    return np.mean(np.linalg.norm(np.subtract(targets, predictions), ord=2, axis=1), axis=0)
 
 
 metric_funcs = {
-    "binary_classification_accuracy": Metric(binary_classification_accuracy, "Binary_Classification_Accuracy"),
-    "mean_squared_error": Metric(ms_error, "Mean_Squared_Error"),
-    "mean_euclidean_error": Metric(mean_euclidean_error, "Mean_Euclidean_Error")
+    "binary_classification_accuracy": Metric(binary_classification_accuracy, "Binary Classification Accuracy"),
+    "mean_squared_error": Metric(ms_error, "MSE"),
+    "mean_euclidean_error": Metric(mean_euclidean_error, "MEE")
 }

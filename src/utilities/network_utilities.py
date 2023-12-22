@@ -20,8 +20,8 @@ def get_empty_gradients(network):
     :return: The empty gradients of the network
     """
     gradients = []
-    for layer_index in range(network.num_layers):
-        gradients.append((np.zeros((network.layers[layer_index].num_unit)), np.zeros((network.layers[layer_index].num_unit, network.layers[layer_index].input_dimension))))
+    for layer in reversed(network.layers):
+        gradients.append((np.zeros((layer.num_unit)), np.zeros((layer.num_unit, layer.input_dimension))))
     return gradients
 
 
@@ -32,9 +32,9 @@ def get_weights(network):
     :return: The weights of the network
     """
     weights = []
-    for layer_index in range(network.num_layers):
-        weights_b = network.layers[layer_index].biases
-        weights_w = network.layers[layer_index].weights
+    for layer in network.layers:
+        weights_b = layer.biases
+        weights_w = layer.weights
         weights.append((weights_b, weights_w))
     return weights
 
@@ -45,6 +45,5 @@ def restore_weights(network, weights):
     :param network: The network
     :param weights: The weights
     """
-    for layer_index in range(network.num_layers):
-        network.layers[layer_index].biases = weights[layer_index][0]
-        network.layers[layer_index].weights = weights[layer_index][1]
+    for index, layer in enumerate(network.layers):
+        layer.biases, layer.weights = weights[index]

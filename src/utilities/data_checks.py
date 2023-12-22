@@ -1,6 +1,6 @@
 import json
 
-def check_parameters(parameters):
+def check_param(parameters):
     """
     Checks if the parameters are valid
     :return: True if the parameters are valid, False otherwise
@@ -24,21 +24,18 @@ def check_parameters(parameters):
         if key == "num_layers":
             if parameters[key] < 2:
                 raise Exception("The number of layers must be greater than 1")
-        elif key == "layer_sizes":
+        elif key == "layers_sizes":
             if len(parameters[key]) != parameters["num_layers"]:
                 raise Exception("The number of layers and the number of layer sizes must be the same")
             for layer_size in parameters[key]:
                 if layer_size < 1:
                     raise Exception("The number of units in a layer must be greater than 0")
-        elif key == "hidden_activation_funcs":
-            if len(parameters[key]) != parameters["num_layers"] - 1:
+        elif key == "layers_activation_funcs":
+            if len(parameters[key]) != parameters["num_layers"]:
                 raise Exception("The number of hidden activation functions must be the number of hidden layers")
             for activation_func in parameters[key]:
                 if str(activation_func) not in activation_funcs:
                     raise Exception("The hidden activation functions are not valid")
-        elif key == "output_activation_func":
-            if str(parameters[key]) not in activation_funcs:
-                raise Exception("The output activation function is not valid")
         elif key == "loss_func":
             if str(parameters[key]) not in loss_funcs:
                 raise Exception("The loss function is not valid")
@@ -73,7 +70,7 @@ def check_parameters(parameters):
         elif key == "learning_rate_decay_epochs":
             if parameters[key] < 1:
                 raise Exception("The learning rate decay epochs must be greater than 0")
-        elif key == "minimum_learning_rate":
+        elif key == "min_learning_rate":
             if parameters[key] <= 0:
                 raise Exception("The minimum learning rate must be greater than 0")
             if parameters[key] > parameters["learning_rate"]:
@@ -84,6 +81,8 @@ def check_parameters(parameters):
         elif key == "nesterov_momentum":
             if parameters[key] != True and parameters[key] != False:
                 raise Exception("The nesterov momentum must be a boolean")
+            if parameters[key] == True and parameters["momentum_alpha"] == 0:
+                raise Exception("The momentum alpha must be greater than 0 for nesterov momentum to be True")
         elif key == "weight_decay":
             if parameters[key] < 0:
                 raise Exception("The weight decay must be greater or equal to 0")
@@ -101,7 +100,7 @@ def check_parameters(parameters):
     return True
 
 
-def check_inputs_targets(inputs, targets=None, expected_inputs_dim=None, expected_targets_dim=None):
+def check_sets(inputs, expected_inputs_dim, targets=None, expected_targets_dim=None):
     """
     Checks if the input and target data is valid
     :param inputs: The input data
