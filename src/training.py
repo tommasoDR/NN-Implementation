@@ -115,6 +115,11 @@ class SGD():
         if plot:
             su.plot_results(training_loss, validation_loss, training_metric, validation_metric, self.loss.name, self.metric.name)
 
+        f = open("results.txt", "w")
+        for input, target in list(zip(training_set_inputs, training_set_targets)):
+            output = self.network.foward_pass(input)
+            f.write(str(output) + " ---- " + str(target) + "\n")
+
 
     def generate_minibatch(self, training_set_inputs, training_set_targets, minibatch_index, minibatch_size):
         """
