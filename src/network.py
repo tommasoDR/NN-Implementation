@@ -24,17 +24,16 @@ class Network:
         self.weight_init_type = weight_init_type
         self.weight_init_range = weight_init_range
 
-        self.parameters = {"num_layers": num_layers, "layer_sizes": layer_sizes, "hidden_activation_funcs": hidden_activation_funcs,
-                           "output_activation_func": output_activation_func, "weight_init_type": weight_init_type, "weight_init_range": weight_init_range}
-
         try:
+            self.parameters = {"num_layers": num_layers, "layer_sizes": layer_sizes, "hidden_activation_funcs": hidden_activation_funcs,
+                            "output_activation_func": output_activation_func, "weight_init_type": weight_init_type, "weight_init_range": weight_init_range}
             data_checks.check_parameters(self.parameters)
         except Exception as e:
             print(e); exit(1)
 
         self.layers = []
         layer_input_dimension = input_dimension
-        for i in range(num_layers):
+        for i in range(self.num_layers):
             self.layers.append(Layer(input_dimension=layer_input_dimension, num_unit=layer_sizes[i], activation_func=self.layer_activation_funcs[i], weight_init_type=weight_init_type, weight_init_range=weight_init_range))
             layer_input_dimension = layer_sizes[i]
 
@@ -57,8 +56,8 @@ class Network:
         :param dErr_dOut: The derivative of the error with respect to the output of the network
         :return: The gradients of the network
         """
-        gradients = [0]*len(self.layers)
-        for layer_index in reversed(range(len(self.layers))):
+        gradients = [None]*self.num_layers
+        for layer_index in reversed(range(self.num_layers)):
             dErr_dOut, gradients_biases, gradients_w = self.layers[layer_index].backward_pass(dErr_dOut)
             gradients[layer_index] = (gradients_biases, gradients_w)
         return gradients
@@ -79,7 +78,7 @@ class Network:
 
         loss = loss_functions.loss_funcs[loss_function]
         
-        outputs = self.foward_pass(inputs)
+        outputs = np.array([self.foward_pass(input) for input in inputs])
 
         loss_value = 0
         for output, target in list(zip(outputs, targets)):

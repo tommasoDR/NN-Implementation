@@ -15,11 +15,10 @@ class SGD():
     def __init__(self, network, loss_function, metric_function, learning_rate, learning_rate_decay, learning_rate_decay_func, learning_rate_decay_epochs,
                  minimum_learning_rate, momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda):
         
-        parameters= {"loss_func": loss_function, "metric_function": metric_function, "learning_method": 'sgd', "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,"learning_rate_decay_func": learning_rate_decay_func,
-                     "learning_rate_decay_epochs": learning_rate_decay_epochs, "minimum_learning_rate": minimum_learning_rate, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
-                     "regularization_func": regularization_func, "regularization_lambda": regularization_lambda}
-        
         try:
+            parameters= {"loss_func": loss_function, "metric_function": metric_function, "learning_method": 'sgd', "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,"learning_rate_decay_func": learning_rate_decay_func,
+                        "learning_rate_decay_epochs": learning_rate_decay_epochs, "minimum_learning_rate": minimum_learning_rate, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
+                        "regularization_func": regularization_func, "regularization_lambda": regularization_lambda}
             data_checks.check_parameters(parameters)
         except Exception as e:
             print(e); exit(1)
@@ -76,7 +75,7 @@ class SGD():
                 current_minibatch_size = len(mb_training_set_inputs)
 
                 # nesterov momentum
-                if self.nesterov_momentum and old_deltas is not None:
+                if self.momentum_alpha>0 and self.nesterov_momentum and old_deltas is not None:
                     old_weights = nu.get_weights(self.network)
                     self.apply_nesterov_momentum(old_deltas)
 
@@ -145,10 +144,8 @@ class SGD():
         :return: The new gradients of the network
         """
         for layer_index in range(self.network.num_layers):
-            gradients_biases = gradients[layer_index][0]
-            gradients_w = gradients[layer_index][1]
-            new_gradients_biases = new_gradients[layer_index][0]
-            new_gradients_w = new_gradients[layer_index][1]
+            gradients_biases, gradients_w = gradients[layer_index]
+            new_gradients_biases, new_gradients_w = new_gradients[layer_index]
             gradients[layer_index] = (np.add(gradients_biases, new_gradients_biases), np.add(gradients_w, new_gradients_w))
         return gradients
     
@@ -161,8 +158,7 @@ class SGD():
         """
         deltas = []
         for layer_index in range(self.network.num_layers):
-            gradients_biases = gradients[layer_index][0]
-            gradients_w = gradients[layer_index][1]
+            gradients_biases, gradients_w = gradients[layer_index]
             delta_biases = self.learning_rate * (- gradients_biases / current_minibatch_size)
             delta_w = self.learning_rate * (- gradients_w / current_minibatch_size)
             deltas.append((delta_biases, delta_w))
@@ -178,8 +174,7 @@ class SGD():
         :return: None
         """
         for layer_index in range(self.network.num_layers):
-            delta_bias = deltas[layer_index][0]
-            delta_w = deltas[layer_index][1]
+            delta_bias, delta_w = deltas[layer_index]
             # regularization
             penalty_term_values = self.regularization.derivative(self.network.layers[layer_index].weights, current_regularization_lambda)
             self.network.layers[layer_index].weights = np.subtract(self.network.layers[layer_index].weights, penalty_term_values)
@@ -188,8 +183,7 @@ class SGD():
             self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, delta_w)      
             # momentum
             if old_deltas is not None:
-                old_delta_bias = old_deltas[layer_index][0]
-                old_delta_w = old_deltas[layer_index][1]
+                old_delta_bias, old_delta_w = old_deltas[layer_index]
                 self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.momentum_alpha * old_delta_bias)
                 self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.momentum_alpha * old_delta_w)
             
@@ -201,8 +195,7 @@ class SGD():
         :return: None
         """
         for layer_index in range(self.network.num_layers):
-            old_delta_bias = old_deltas[layer_index][0]
-            old_delta_w = old_deltas[layer_index][1]
+            old_delta_bias, old_delta_w = old_deltas[layer_index]
             self.network.layers[layer_index].biases = np.add(self.network.layers[layer_index].biases, self.momentum_alpha * old_delta_bias)
             self.network.layers[layer_index].weights = np.add(self.network.layers[layer_index].weights, self.momentum_alpha * old_delta_w)
 

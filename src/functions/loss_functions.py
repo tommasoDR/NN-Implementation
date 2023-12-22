@@ -72,12 +72,12 @@ def mean_euclidean_error_all_der(prediction, target):
     :return: the result of the derivative of Euclidean loss between predictions and targets.
     """
 
-    return - np.subtract(target, prediction) / np.linalg.norm((target-prediction), ord=2)#np.sqrt(np.sum(np.square(np.subtract(target, prediction))))
+    return - np.subtract(target, prediction) / np.linalg.norm((target-prediction), ord=2) #np.sqrt(np.sum(np.square(np.subtract(target, prediction))))
 
 
 loss_funcs = {
-    "mean_squared_error": Loss(ms_error, ms_error_all_der, "MS"),
-    "mean_euclidean_error": Loss(mean_euclidean_error, mean_euclidean_error_all_der, "MER")
+    "mean_squared_error": Loss(ms_error, ms_error_all_der, "MSE"),
+    "mean_euclidean_error": Loss(mean_euclidean_error, mean_euclidean_error_all_der, "MEE")
 }
 
 

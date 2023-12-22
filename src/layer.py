@@ -33,9 +33,9 @@ class Layer:
         :return: The output of the layer
         """
         self.input = input
-        partial_nets = [np.dot(input, self.weights[t]) for t in range(self.num_unit)]
+        partial_nets = np.array([np.dot(input, self.weights[t]) for t in range(self.num_unit)])
         self.nets = np.add(partial_nets, self.biases)
-        return [self.activation.function(net) for net in self.nets]
+        return np.array([self.activation.function(net) for net in self.nets])
     
     
     def backward_pass(self, dErr_dOut):
@@ -44,7 +44,7 @@ class Layer:
         :param delta: The delta of the next layer
         :return: The delta of the layer
         """
-        dOut_dNet = [self.activation.derivative(net) for net in self.nets]
+        dOut_dNet = np.array([self.activation.derivative(net) for net in self.nets])
         minus_delta = np.multiply(dErr_dOut, dOut_dNet)
         gradient_w = np.zeros((self.num_unit, self.input_dimension))
         gradient_biases = minus_delta
