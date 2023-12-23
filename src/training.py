@@ -167,7 +167,7 @@ class SGD():
             layer.apply_momentum(momentum_alpha)
 
 
-    def update_weights(self, learning_rate):
+    def update_weights(self, ):
         """
         Updates the weights of the network
         :param gradient: the delta of the network
@@ -176,7 +176,7 @@ class SGD():
         :return: None
         """
         for layer in self.network.layers:
-            layer.update_weights(learning_rate)
+            layer.update_weights()
 
     
     def regularize(self, regularization_lambda, regularization):

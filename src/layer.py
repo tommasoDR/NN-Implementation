@@ -72,13 +72,13 @@ class Layer:
         self.delta_b += momentum_alpha * self.delta_b
 
     
-    def update_weights(self, learning_rate):
+    def update_weights(self):
         """"
         Updates the weights
         :param learning_rate: The learning rate
         """
-        self.weights += learning_rate * self.delta_w
-        self.biases += learning_rate * self.delta_b
+        self.weights += self.delta_w
+        self.biases += self.delta_b
 
 
     def regularize(self, regularization_lambda, regularization):
