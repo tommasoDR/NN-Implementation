@@ -93,17 +93,17 @@ class SGD():
                     nu.restore_weights(self.network, old_weights)
 
                 # normalize deltas
-                self.normalize_deltas(curr_batch_size)
+                self.normalize_deltas(self.learning_rate, curr_batch_size)
 
                 # apply regularization
                 current_regularization_lambda = self.regularization_lambda * curr_batch_size / len(tr_inputs)
                 self.regularize(current_regularization_lambda, self.regularization)
 
-                # apply momentum
+                # apply momentum  TODO: solve problem with momentum
                 self.apply_momentum(self.momentum_alpha)
-                
+
                 # update weights
-                self.update_weights(self.learning_rate)
+                self.update_weights()
 
                 
             # apply learning rate decay   
@@ -147,14 +147,14 @@ class SGD():
         return b_tr_inputs, b_tr_targets
     
 
-    def normalize_deltas(self, batch_size):
+    def normalize_deltas(self, learning_rate, batch_size):
         """
         Normalizes the deltas of the network
         :param batch_size: The size of the minibatch
         :return: None
         """
         for layer in self.network.layers:
-            layer.normalize_deltas(batch_size)
+            layer.normalize_deltas(learning_rate, batch_size)
 
 
     def apply_momentum(self, momentum_alpha):

@@ -52,13 +52,13 @@ class Layer:
         return - np.dot(self.delta, self.weights)
     
 
-    def normalize_deltas(self, batch_size):
+    def normalize_deltas(self, learning_rate, batch_size):
         """
         Normalizes the deltas
         :param batch_size: The size of the minibatch
         """
-        self.delta_w /= batch_size
-        self.delta_b /= batch_size
+        self.delta_w *= (learning_rate / batch_size)
+        self.delta_b *= (learning_rate / batch_size)
     
 
     def apply_momentum(self, momentum_alpha):
