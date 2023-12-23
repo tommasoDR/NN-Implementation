@@ -1,12 +1,46 @@
 from utilities import datasets_utilities
 from network import Network
 from training import learning_methods
+from validation import model_selection
+import pprint
 
 
 if __name__ == '__main__':
     # Read the datasets
     inputs, targets, _ = datasets_utilities.read_cup()
 
+    net_combinations = {
+        "input_dimension": [10],
+        "num_layers": [3,4],
+        "layers_sizes": [[16,16,3],[32, 32, 32, 3]],
+        "layers_activation_funcs": [["leaky_relu", "leaky_relu", "identity"],["leaky_relu", "leaky_relu", "tanh" , "identity"]],
+        "weight_init_type": ["glorot_bengio"]
+    }
+
+    tr_combinations = {
+        "loss_func": ["mean_squared_error"],
+        "metric_func": ["mean_euclidean_error"],
+        "epochs": [100],
+        "batch_size": [50],
+        "learning_rate": [0.006, 0.004],
+        "learning_rate_decay": [True, False],
+        "learning_rate_decay_func": ["linear"],
+        "learning_rate_decay_epochs": [2000],
+        "min_learning_rate": [0.002],
+        "momentum_alpha": [0.5],
+        "nesterov_momentum": [False],
+        "regularization_func": ["L2"],
+        "regularization_lambda": [0, 0.0001]
+    }
+
+    model_sel = model_selection.Model_selection(tr_combinations, net_combinations, inputs, targets, 3)
+
+    network, training_istance = model_sel.grid_search()
+
+    
+
+
+    """
     # Split the datasets
     training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.15)
     
@@ -42,4 +76,4 @@ if __name__ == '__main__':
     training_istance = learning_methods["sgd"](**train_parameters)
     
     training_istance.training(training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, 4000, 50, plot=True)
-
+    """
