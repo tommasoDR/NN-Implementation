@@ -1,0 +1,41 @@
+{
+    "activation_funcs": [
+        "relu",
+        "leaky_relu",
+        "identity",
+        "sigmoid",
+        "tanh"
+    ],
+
+    "loss_funcs": [
+        "squared_error",
+        "mean_squared_error",
+        "mean_euclidean_error",
+        "cross_entropy_error"
+    ],
+
+    "metric_funcs": [
+        "binary_classification_accuracy",
+        "mean_squared_error",
+        "mean_euclidean_error"
+    ],
+
+    "decay_functions": [
+        "linear",
+        "exponential"
+    ],
+
+    "regularization_func": [
+        "L2"
+    ],
+
+    "learning_methods": [
+        "sgd"
+    ],
+
+    "weight_inits_type": [
+        "random_uniform",
+        "glorot_bengio"
+    ]
+
+}
