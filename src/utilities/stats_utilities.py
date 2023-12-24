@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_results(training_loss, test_loss, training_metric, test_metric, loss, metric):
+def plot_results(training_loss, training_metric, test_loss, test_metric, loss, metric):
     """
     Plot the results
     """
@@ -15,13 +15,19 @@ def plot_results(training_loss, test_loss, training_metric, test_metric, loss, m
 
     # Create the dataframe of the loss
     training_loss_df = pd.DataFrame(training_loss)
-    test_loss_df = pd.DataFrame(test_loss)
     training_loss_df["Set"] = "Training"
-    test_loss_df["Set"] = "Test"
-    data = pd.concat([training_loss_df, test_loss_df])
+    
+    if test_loss is not None:
+        test_loss_df = pd.DataFrame(test_loss)
+        test_loss_df["Set"] = "Test"
+        data = pd.concat([training_loss_df, test_loss_df])
+        pal = ["blue", "red"]
+    else:
+        pal = ["blue"]
+        data = training_loss_df
 
     # Plot the loss
-    sns.lineplot(data=data, x=data.index, y=0, hue="Set", style="Set", palette=["blue", "red"])
+    sns.lineplot(data=data, x=data.index, y=0, hue="Set", style="Set", palette=pal)
 
     plt.ylabel(loss, fontsize=15)
     plt.xlabel("Epochs", fontsize=15)
@@ -32,13 +38,19 @@ def plot_results(training_loss, test_loss, training_metric, test_metric, loss, m
 
     # Create the dataframe of the metric
     training_metric_df = pd.DataFrame(training_metric)
-    test_metric_df = pd.DataFrame(test_metric)
     training_metric_df["Set"] = "Training"
-    test_metric_df["Set"] = "Test"
-    data = pd.concat([training_metric_df, test_metric_df])
+    
+    if test_metric is not None:
+        test_metric_df = pd.DataFrame(test_metric)
+        test_metric_df["Set"] = "Test"
+        data = pd.concat([training_metric_df, test_metric_df])
+        pal = ["blue", "red"]
+    else:
+        pal = ["blue"]
+        data = training_metric_df
 
     # Plot the metric
-    sns.lineplot(data=data, x=data.index, y=0, hue="Set", style="Set", palette=["blue", "red"])
+    sns.lineplot(data=data, x=data.index, y=0, hue="Set", style="Set", palette=pal)
 
     plt.ylabel(metric, fontsize=15)
     plt.xlabel("Epochs", fontsize=15)

@@ -1,5 +1,5 @@
 import numpy as np
-from validation import grid_search as ms
+from selection import grid_search as ms
 from network import Network
 from training import learning_methods
 from utilities import stats_utilities as su

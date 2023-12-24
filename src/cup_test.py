@@ -1,8 +1,8 @@
 from utilities import datasets_utilities
 from network import Network
 from training import learning_methods
-from validation import grid_search
-from validation import cross_validation
+from selection import grid_search
+from selection import cross_validation
 import pprint
 
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     }
 
     tr_combinations = {
-        "epochs": [100],
+        "epochs": [500],
         "batch_size": [50],
         "learning_rate": [0.006, 0.004],
         "learning_rate_decay": [True, False],
@@ -37,13 +37,12 @@ if __name__ == '__main__':
     #model_sel = grid_search.Grid_search(net_combinations, tr_combinations, inputs, targets, 3)
     #network, training_istance, result = model_sel.grid_search(print_flag = True)
 
-    stats = cross_validation.double_kfolds_validation(net_combinations, tr_combinations, inputs, targets, 3)
+    #stats = cross_validation.double_kfolds_validation(net_combinations, tr_combinations, inputs, targets, 3)
 
-    pprint.pprint(stats, sort_dicts=False)
+    #pprint.pprint(stats, sort_dicts=False)
+    
     
 
-
-    """
     # Split the datasets
     training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.15)
     
@@ -52,6 +51,8 @@ if __name__ == '__main__':
         "num_layers": 4,
         "layers_sizes": [32, 32, 32, 3],
         "layers_activation_funcs": ["leaky_relu", "leaky_relu", "tanh" , "identity"],
+        "loss_func": "mean_squared_error",
+        "metric_func": "mean_euclidean_error",
         #"weight_init_type": "random_uniform",
         #"weight_init_range": [-0.7, 0.7]
         "weight_init_type": "glorot_bengio"
@@ -63,20 +64,23 @@ if __name__ == '__main__':
     # Train the network
     train_parameters = {
         "network": network,
-        "loss_function": "mean_squared_error",
-        "metric_function": "mean_euclidean_error",
-        "learning_rate": 0.006,
+        "epochs": 30000,
+        "batch_size": 50,
+        "learning_rate": 0.01,
         "learning_rate_decay": True,
         "learning_rate_decay_func": "linear",
         "learning_rate_decay_epochs": 2000,
-        "min_learning_rate": 0.003,
+        "min_learning_rate": 0.005,
         "momentum_alpha": 0.5,
         "nesterov_momentum": False,
         "regularization_func": "L2",
-        "regularization_lambda": 0.000
+        "regularization_lambda": 0.00001,
+        "early_stopping": True,
+        "patience": 10,
+        "delta_percentage": 0.01
     }
 
     training_istance = learning_methods["sgd"](**train_parameters)
     
-    training_istance.training(training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, 4000, 50, plot=True)
-    """
+    training_istance.training(training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, verbose=True, plot=True)
+ 
