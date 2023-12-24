@@ -4,21 +4,18 @@ from utilities import datasets_utilities as du
 from utilities import stats_utilities as su  
 from functions import regularization_functions
 from functions import decay_functions
-from functions import loss_functions
-from functions import metric_functions
 import numpy as np
-import random
 import math
 
 
 class SGD():
 
-    def __init__(self, network, loss_func, metric_func, epochs, batch_size, learning_rate, learning_rate_decay, learning_rate_decay_func,
+    def __init__(self, network, epochs, batch_size, learning_rate, learning_rate_decay, learning_rate_decay_func,
                  learning_rate_decay_epochs, min_learning_rate, momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda):
         
         try:
-            parameters= {"loss_func": loss_func, "metric_func": metric_func, "epochs": epochs, "batch_size":batch_size, "learning_rate": learning_rate,
-                         "learning_rate_decay": learning_rate_decay,"learning_rate_decay_func": learning_rate_decay_func, "learning_rate_decay_epochs": learning_rate_decay_epochs,
+            parameters= {"epochs": epochs, "batch_size":batch_size, "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,
+                         "learning_rate_decay_func": learning_rate_decay_func, "learning_rate_decay_epochs": learning_rate_decay_epochs,
                          "min_learning_rate": min_learning_rate, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
                          "regularization_func": regularization_func,"regularization_lambda": regularization_lambda
                          }
@@ -27,8 +24,6 @@ class SGD():
             print(e); exit(1)
 
         self.network = network
-        self.loss = loss_functions.loss_funcs[loss_func]
-        self.metric = metric_functions.metric_funcs[metric_func]
         self.epochs = epochs
         self.batch_size = batch_size
         self.starting_learning_rate = learning_rate
@@ -101,11 +96,6 @@ class SGD():
         # plot results
         if plot:
             su.plot_results(tr_loss, vl_loss, tr_metric, val_metric, self.loss.name, self.metric.name)
-
-        if validation:
-            return tr_metric[-1], val_metric[-1], tr_loss[-1], vl_loss[-1]
-        
-        return tr_metric[-1], tr_loss[-1]
     
 
     def fitting(self, tr_inputs, tr_targets, batch_size):
@@ -127,7 +117,7 @@ class SGD():
 
             # compute deltas
             b_tr_outputs = self.network.foward_pass(b_tr_inputs)
-            dErr_dOut = self.loss.derivative(b_tr_outputs, b_tr_targets)
+            dErr_dOut = self.network.compute_loss_derivative(b_tr_outputs, b_tr_targets)
             self.network.backpropagation(dErr_dOut)
 
             # restore weights after nesterov momentum
@@ -148,9 +138,7 @@ class SGD():
             self.update_weights()
 
         # calculate loss and metric
-        outputs_tr = self.network.foward_pass(tr_inputs)
-        tr_loss = self.loss.function(outputs_tr, tr_targets)
-        tr_metric = self.metric.function(outputs_tr, tr_targets, self.network.layers[-1].activation.name)
+        tr_loss, tr_metric = self.network.evaluate(tr_inputs, tr_targets)
 
         return tr_loss, tr_metric
 
@@ -162,10 +150,7 @@ class SGD():
         :param vl_set_targets: The validation set targets
         :return: The loss and the metric on the validation set
         """
-
-        outputs = self.network.foward_pass(vl_set_inputs)
-        loss = self.loss.function(outputs, vl_targets)
-        metric = self.metric.function(outputs, vl_targets, self.network.layers[-1].activation.name)
+        loss, metric = self.network.evaluate(vl_set_inputs, vl_targets)
 
         return loss, metric
 
@@ -185,8 +170,8 @@ class SGD():
         if end > len(tr_inputs):
             end = len(tr_inputs)
 
-        b_tr_inputs = np.array([tr_inputs[index] for index in range(start, end)])
-        b_tr_targets = np.array([tr_targets[index] for index in range(start, end)])
+        b_tr_inputs = np.array([tr_inputs[i] for i in range(start, end)])
+        b_tr_targets = np.array([tr_targets[i] for i in range(start, end)])
         return b_tr_inputs, b_tr_targets
     
 

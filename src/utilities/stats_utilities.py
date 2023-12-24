@@ -1,6 +1,7 @@
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot_results(training_loss, test_loss, training_metric, test_metric, loss, metric):
     """
@@ -45,3 +46,34 @@ def plot_results(training_loss, test_loss, training_metric, test_metric, loss, m
 
     plt.savefig(path_metric, format='pdf', dpi=600, bbox_inches="tight")
     plt.close()
+
+
+def compute_stats(tr_loss, tr_metric, vl_loss, vl_metric, ts_loss=None, ts_metric=None):
+    tr_loss_mean = np.mean(tr_loss)
+    tr_loss_std = np.std(tr_loss)
+
+    tr_metric_mean = np.mean(tr_metric)
+    tr_metric_std = np.std(tr_metric)
+
+    vl_loss_mean = np.mean(vl_loss)
+    vl_loss_std = np.std(vl_loss)
+
+    vl_metric_mean = np.mean(vl_metric)
+    vl_metric_std = np.std(vl_metric)
+
+    if ts_loss is None or ts_metric is None:
+        stats = {'tr_loss_mean' : tr_loss_mean, 'tr_loss_std': tr_loss_std, 'tr_metric_mean': tr_metric_mean, 'tr_metric_std': tr_metric_std,
+                'vl_loss_mean' : vl_loss_mean, 'vl_loss_std': vl_loss_std, 'vl_metric_mean' : vl_metric_mean, 'vl_metric_std': vl_metric_std}
+        return stats
+
+    ts_loss_mean = np.mean(ts_loss)
+    ts_loss_std = np.std(ts_loss)
+
+    ts_metric_mean = np.mean(ts_metric)
+    ts_metric_std = np.std(ts_metric)
+
+    stats = {'tr_loss_mean' : tr_loss_mean, 'tr_loss_std': tr_loss_std, 'tr_metric_mean': tr_metric_mean, 'tr_metric_std': tr_metric_std,
+            'vl_loss_mean' : vl_loss_mean, 'vl_loss_std': vl_loss_std, 'vl_metric_mean' : vl_metric_mean, 'vl_metric_std': vl_metric_std,
+            'ts_loss_mean' : ts_loss_mean, 'ts_loss_std': ts_loss_std, 'ts_metric_mean': ts_metric_mean, 'ts_metric_std': ts_metric_std}
+    
+    return stats

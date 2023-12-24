@@ -1,7 +1,8 @@
 from utilities import datasets_utilities
 from network import Network
 from training import learning_methods
-from validation import model_selection
+from validation import grid_search
+from validation import cross_validation
 import pprint
 
 
@@ -14,12 +15,12 @@ if __name__ == '__main__':
         "num_layers": [3,4],
         "layers_sizes": [[16,16,3],[32, 32, 32, 3]],
         "layers_activation_funcs": [["leaky_relu", "leaky_relu", "identity"],["leaky_relu", "leaky_relu", "tanh" , "identity"]],
+        "loss_func": ["mean_squared_error"],
+        "metric_func": ["mean_euclidean_error"],
         "weight_init_type": ["glorot_bengio"]
     }
 
     tr_combinations = {
-        "loss_func": ["mean_squared_error"],
-        "metric_func": ["mean_euclidean_error"],
         "epochs": [100],
         "batch_size": [50],
         "learning_rate": [0.006, 0.004],
@@ -33,10 +34,12 @@ if __name__ == '__main__':
         "regularization_lambda": [0, 0.0001]
     }
 
-    model_sel = model_selection.Model_selection(tr_combinations, net_combinations, inputs, targets, 3)
+    #model_sel = grid_search.Grid_search(net_combinations, tr_combinations, inputs, targets, 3)
+    #network, training_istance, result = model_sel.grid_search(print_flag = True)
 
-    network, training_istance = model_sel.grid_search()
+    stats = cross_validation.double_kfolds_validation(net_combinations, tr_combinations, inputs, targets, 3)
 
+    pprint.pprint(stats, sort_dicts=False)
     
 
 
