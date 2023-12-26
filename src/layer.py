@@ -71,6 +71,18 @@ class Layer:
             return
         self.delta_b += momentum_alpha * delta_bias
         self.delta_w += momentum_alpha * delta_weight
+    
+
+    def apply_nest_momentum(self, momentum_alpha, delta):
+        """
+        Applies the nest momentum
+        :param momentum_alpha: The momentum alpha
+        """
+        delta_bias, delta_weight = delta
+        if delta_bias is None or delta_weight is None:
+            return
+        self.biases += momentum_alpha * delta_bias
+        self.weights += momentum_alpha * delta_weight
 
     
     def update_weights(self):
@@ -78,8 +90,8 @@ class Layer:
         Updates the weights
         :param learning_rate: The learning rate
         """
-        self.weights += self.delta_w
         self.biases += self.delta_b
+        self.weights += self.delta_w
 
 
     def regularize(self, regularization_lambda, regularization):

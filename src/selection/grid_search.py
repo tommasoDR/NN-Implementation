@@ -3,6 +3,7 @@ from utilities import data_checks as dc
 from network import Network
 from training import learning_methods
 import numpy as np
+import time
 import pprint
 import itertools
 
@@ -38,7 +39,7 @@ class Grid_search():
 
         net_combs, tr_combs = self.get_combinations()
 
-        return self.execute_search(net_combs, tr_combs, print_flag)
+        return self.execute_search(self, net_combs, tr_combs, print_flag)
 
     @staticmethod    
     def execute_search(self, net_combs, tr_combs, print_flag):
@@ -51,6 +52,7 @@ class Grid_search():
 
         for net_comb in net_combs: 
             for tr_comb in tr_combs:
+
                 results[f"comb_{i}"] = kfold_validation(net_comb, tr_comb, self.dataset_inputs, self.dataset_targets, self.num_folds)
 
                 # Save the best combination
@@ -61,6 +63,9 @@ class Grid_search():
                     best_tr_comb = tr_comb
                     index_best = f"comb_{i}"
                 
+                if print_flag:
+                    print(f"Combination {i} of {len(net_combs) * len(tr_combs)}")
+
                 i += 1
 
         network = Network(**best_net_comb)
@@ -68,10 +73,13 @@ class Grid_search():
 
         if print_flag:
             try:
-                f = open("results.txt", "w")
-                print(f"Best combination: {str(index_best)}\n", file=f)
-                pprint.pprint(results, stream=f, sort_dicts=False)
-                f.close()
+                t = time.localtime()
+                current_time = time.strftime("%H_%M_%S", t)
+
+                file = open(f"selection/results/results_{current_time}.txt", "w")
+                print(f"Best combination: {str(index_best)}\n", file=file)
+                pprint.pprint(results, stream=file, sort_dicts=False)
+                file.close()
             except:
                 print("Error writing results to file")
 

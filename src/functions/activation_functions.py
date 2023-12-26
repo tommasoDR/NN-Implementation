@@ -111,10 +111,16 @@ def leaky_ReLU_derivative(x):
 
 
 def SELU(x, lambd = 1.0507, alpha = 1.6732):
+    """
+    Compute the SELU function.
+    """
     return np.where(x > 0, lambd * x, lambd * alpha * (np.exp(x) - 1))
     
 
 def SELU_derivative(x, lambd = 1.0507, alpha = 1.6732):
+    """
+    Compute the derivative of SELU function.
+    """
     return np.where(x > 0, lambd, lambd * alpha * np.exp(x))
 
 

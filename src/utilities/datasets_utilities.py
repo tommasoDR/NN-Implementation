@@ -6,7 +6,7 @@ import sys
 
 def read_monk(dataset, rescale=False):
     """
-    Reads the monks datasets, creates the labels for supervised classification and hide them to the classifier.
+    Reads the monks datasets and returns the dataset and the labels as numpy ndarrays.
     Possibility to rescale the labels to [-1, +1] instead of [0, +1]
 
     Return monk dataset and labels (as numpy ndarrays)

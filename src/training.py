@@ -81,6 +81,7 @@ class SGD():
             vl_loss = np.array([]) 
             vl_metric = np.array([])
 
+        # training loop
         for epoch in range(self.epochs):
 
             # one epoch of training
@@ -134,7 +135,7 @@ class SGD():
             # nesterov momentum
             if self.nesterov_momentum:
                 old_weights = nu.get_weights(self.network)
-                self.apply_momentum(self.momentum_alpha, deltas)
+                self.apply_nest_momentum(self.momentum_alpha, deltas)
 
             # compute deltas
             b_tr_outputs = self.network.foward_pass(b_tr_inputs)
@@ -215,8 +216,18 @@ class SGD():
         for i,layer in enumerate(self.network.layers):
             layer.apply_momentum(momentum_alpha, deltas[i])
 
+    
+    def apply_nest_momentum(self, momentum_alpha, deltas):
+        """
+        Applies the nesterov momentum to the weights of the network
+        :param deltas: The deltas of the previous epoch
+        :return: None
+        """
+        for i,layer in enumerate(self.network.layers):
+            layer.apply_nest_momentum(momentum_alpha, deltas[i])
 
-    def update_weights(self, ):
+
+    def update_weights(self):
         """
         Updates the weights of the network
         :param gradient: the delta of the network

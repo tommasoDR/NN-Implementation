@@ -2,13 +2,18 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 def plot_results(training_loss, training_metric, test_loss, test_metric, loss, metric):
     """
     Plot the results
     """
-    path_loss = "../plots/loss.pdf"
-    path_metric = "../plots/metric.pdf"
+
+    t = time.localtime()
+    current_time = time.strftime("%H_%M_%S", t)
+    
+    path_loss = f"../plots/loss_{current_time}.pdf"
+    path_metric = f"../plots/metric_{current_time}.pdf"
 
     loss = loss.replace("_", " ")
     metric = metric.replace("_", " ")
