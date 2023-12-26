@@ -86,6 +86,9 @@ def split_dataset(dataset_inputs, dataset_targets, validation_percentage, test=F
     if not test and test_percentage > 0:
         print("The test percentage must be 0 if test is False")
         sys.exit(1)
+    elif validation_percentage + test_percentage >= 1:
+        print("The sum of the validation and test percentage must be less than 1")
+        sys.exit(1)
 
     # Split the dataset into training, validation and (optionally) test set
     dataset_length = len(dataset_inputs)

@@ -1,6 +1,7 @@
 {
     "activation_funcs": [
         "relu",
+        "selu",
         "leaky_relu",
         "identity",
         "sigmoid",

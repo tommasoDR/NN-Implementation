@@ -110,10 +110,20 @@ def leaky_ReLU_derivative(x):
     return np.where(x <= 0, 0.01, 1) 
 
 
+def SELU(x, lambd = 1.0507, alpha = 1.6732):
+    return np.where(x > 0, lambd * x, lambd * alpha * (np.exp(x) - 1))
+    
+
+def SELU_derivative(x, lambd = 1.0507, alpha = 1.6732):
+    return np.where(x > 0, lambd, lambd * alpha * np.exp(x))
+
+
+
 activation_funcs = {
     'identity': Activation_function(identity, identity_derivative, 'Identity'),
     'sigmoid': Activation_function(sigmoid, sigmoid_derivative, 'Sigmoid'),
     'tanh': Activation_function(tanh, tanh_derivative, 'Tanh'),
     'relu': Activation_function(ReLU, ReLU_derivative, 'ReLU'),
     'leaky_relu': Activation_function(leaky_ReLU, leaky_ReLU_derivative, 'Leaky ReLU'),
+    'selu': Activation_function(SELU, SELU_derivative, 'SELU')
 }

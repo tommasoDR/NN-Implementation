@@ -128,10 +128,13 @@ class SGD():
             b_tr_inputs, b_tr_targets = self.generate_batch(tr_inputs, tr_targets, batch_index, batch_size)
             curr_batch_size = len(b_tr_inputs)
 
+            # get deltas for momentum
+            deltas = nu.get_deltas(self.network)
+
             # nesterov momentum
             if self.nesterov_momentum:
                 old_weights = nu.get_weights(self.network)
-                self.apply_momentum(self.momentum_alpha)
+                self.apply_momentum(self.momentum_alpha, deltas)
 
             # compute deltas
             b_tr_outputs = self.network.foward_pass(b_tr_inputs)
@@ -150,7 +153,7 @@ class SGD():
             self.regularize(current_regularization_lambda, self.regularization)
 
             # apply momentum
-            self.apply_momentum(self.momentum_alpha)
+            self.apply_momentum(self.momentum_alpha, deltas)
 
             # update weights
             self.update_weights()
@@ -188,8 +191,8 @@ class SGD():
         if end > len(tr_inputs):
             end = len(tr_inputs)
 
-        b_tr_inputs = np.array([tr_inputs[i] for i in range(start, end)])
-        b_tr_targets = np.array([tr_targets[i] for i in range(start, end)])
+        b_tr_inputs = np.array(tr_inputs[start:end])
+        b_tr_targets = np.array(tr_targets[start:end])
         return b_tr_inputs, b_tr_targets
     
 
@@ -203,14 +206,14 @@ class SGD():
             layer.normalize_deltas(learning_rate, batch_size)
 
 
-    def apply_momentum(self, momentum_alpha):
+    def apply_momentum(self, momentum_alpha, deltas):
         """
         Applies the momentum to the weights of the network
         :param old_deltas: The deltas of the previous epoch
         :return: None
         """
-        for layer in self.network.layers:
-            layer.apply_momentum(momentum_alpha)
+        for i,layer in enumerate(self.network.layers):
+            layer.apply_momentum(momentum_alpha, deltas[i])
 
 
     def update_weights(self, ):

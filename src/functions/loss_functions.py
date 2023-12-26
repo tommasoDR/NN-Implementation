@@ -61,7 +61,7 @@ def mean_squared_error_der(predictions, targets):
     :param target: the true output values.
     :return: the result of the derivative of Least Mean Square Error between predictions and targets.
     """
-    return - np.subtract(targets, predictions) / len(predictions)
+    return - np.subtract(targets, predictions) #/ len(predictions)
 
 
 def mean_euclidean_error(predictions, targets): 
@@ -83,7 +83,7 @@ def mean_euclidean_error_der(predictions, targets):
     :param target: the true output values.
     :return: the result of the derivative of Euclidean Error between predictions and targets.
     """
-    return - np.subtract(targets, predictions) / (mean_euclidean_error(predictions, targets) * len(predictions))
+    return - np.subtract(targets, predictions) / (mean_euclidean_error(predictions, targets)) #* len(predictions))
 
 
 loss_funcs = {

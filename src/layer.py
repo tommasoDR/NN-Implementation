@@ -61,15 +61,16 @@ class Layer:
         self.delta_b *= (learning_rate / batch_size)
     
 
-    def apply_momentum(self, momentum_alpha):
+    def apply_momentum(self, momentum_alpha, delta):
         """
         Applies the momentum
         :param momentum_alpha: The momentum alpha
         """
-        if self.delta_w is None or self.delta_b is None:
+        delta_bias, delta_weight = delta
+        if delta_bias is None or delta_weight is None:
             return
-        self.weights += momentum_alpha * self.delta_w
-        self.delta_b += momentum_alpha * self.delta_b
+        self.delta_b += momentum_alpha * delta_bias
+        self.delta_w += momentum_alpha * delta_weight
 
     
     def update_weights(self):
@@ -87,6 +88,6 @@ class Layer:
         :param regularization_lambda: The regularization lambda
         """
         penalty_term = regularization.derivative(self.weights, regularization_lambda)
-        self.delta_w -= penalty_term
+        self.weights -= penalty_term
          
        

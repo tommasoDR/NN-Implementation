@@ -45,13 +45,14 @@ if __name__ == '__main__':
 
     # Split the datasets
     training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.15)
+
     
     net_parameters = {
         "input_dimension": 10,
         "num_layers": 4,
-        "layers_sizes": [32, 32, 32, 3],
-        "layers_activation_funcs": ["leaky_relu", "leaky_relu", "tanh" , "identity"],
-        "loss_func": "mean_squared_error",
+        "layers_sizes": [20, 15, 10, 3],
+        "layers_activation_funcs": ["selu", "selu",  "selu", "identity"],
+        "loss_func": "mean_euclidean_error",
         "metric_func": "mean_euclidean_error",
         #"weight_init_type": "random_uniform",
         #"weight_init_range": [-0.7, 0.7]
@@ -64,18 +65,18 @@ if __name__ == '__main__':
     # Train the network
     train_parameters = {
         "network": network,
-        "epochs": 30000,
-        "batch_size": 50,
-        "learning_rate": 0.01,
+        "epochs": 800,
+        "batch_size": 170,
+        "learning_rate": 0.001,
         "learning_rate_decay": True,
         "learning_rate_decay_func": "linear",
-        "learning_rate_decay_epochs": 2000,
-        "min_learning_rate": 0.005,
-        "momentum_alpha": 0.5,
+        "learning_rate_decay_epochs": 500,
+        "min_learning_rate": 0.00002,
+        "momentum_alpha": 0.9,
         "nesterov_momentum": False,
         "regularization_func": "L2",
-        "regularization_lambda": 0.00001,
-        "early_stopping": True,
+        "regularization_lambda": 0.000,
+        "early_stopping": False,
         "patience": 10,
         "delta_percentage": 0.01
     }
