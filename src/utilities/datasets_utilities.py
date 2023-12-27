@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
+from scipy.stats import zscore
 import sys
 
 def read_monk(dataset, rescale=False):
@@ -33,7 +34,7 @@ def read_monk(dataset, rescale=False):
     return monk_dataset, labels
 
 
-def read_cup():
+def read_cup(normalize=False):
     """
     Reads CUP dataset, extracting training data, targets and test set
     """
@@ -46,6 +47,7 @@ def read_cup():
     tr_data = pd.read_csv(directory + file, sep=',', names=col_names[1:11], skiprows=range(7), usecols=range(1, 11))
     tr_targets = pd.read_csv(directory + file, sep=',', names=col_names[11:], skiprows=range(7), usecols=range(11, 14))
 
+
     file = "ML-CUP23-TS.csv"
     cup_ts_data = pd.read_csv(directory + file, sep=',', names=col_names[1:11], skiprows=range(7), usecols=range(1, 11))
 
@@ -53,6 +55,10 @@ def read_cup():
     tr_data = tr_data.to_numpy(dtype=np.float32)
     tr_targets = tr_targets.to_numpy(dtype=np.float32)
     cup_ts_data = cup_ts_data.to_numpy(dtype=np.float32)
+
+    if normalize:
+        # Normalize the data
+        tr_data = zscore(tr_data)
 
     # Shuffle the dataset
     tr_data, tr_targets = shuffle(tr_data, tr_targets)

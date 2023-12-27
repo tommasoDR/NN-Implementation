@@ -18,7 +18,8 @@ class SGD():
             parameters= {"epochs": epochs, "batch_size":batch_size, "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,
                          "learning_rate_decay_func": learning_rate_decay_func, "learning_rate_decay_epochs": learning_rate_decay_epochs,
                          "min_learning_rate": min_learning_rate, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
-                         "regularization_func": regularization_func,"regularization_lambda": regularization_lambda
+                         "regularization_func": regularization_func,"regularization_lambda": regularization_lambda,
+                         "early_stopping": early_stopping, "patience": patience, "delta_percentage": delta_percentage
                          }
             dc.check_param(parameters)
         except Exception as e:
@@ -44,7 +45,7 @@ class SGD():
             self.early_stopping = None
 
     
-    def training(self, tr_inputs, tr_targets, vl_set_inputs = None, vl_targets = None, verbose = False, plot = False):
+    def training(self, tr_inputs, tr_targets, vl_inputs = None, vl_targets = None, verbose = False, plot = False):
         """
         Trains the network
         :param tr_set_inputs: The training set inputs
@@ -62,12 +63,12 @@ class SGD():
             print(e); exit(1)
 
         # validation True if validation set is present
-        validation = vl_set_inputs is not None and vl_targets is not None
+        validation = vl_inputs is not None and vl_targets is not None
 
         # check inputs and targets dimensions of validation set
         if validation:
             try:
-                dc.check_sets(vl_set_inputs, self.network.input_dim, vl_targets, self.network.output_dim)
+                dc.check_sets(vl_inputs, self.network.input_dim, vl_targets, self.network.output_dim)
             except Exception as e:
                 print(e); exit(1)
 
@@ -93,10 +94,10 @@ class SGD():
             # apply learning rate decay   
             if self.learning_rate_decay:
                 self.learning_rate = self.decay.function(self.starting_learning_rate, self.minimum_learning_rate, epoch, self.learning_rate_decay_epochs)
-            
+
             # compute loss and metric on validation set
             if validation:
-                vl_loss_epoch, vl_metric_epoch = self.validation(vl_set_inputs, vl_targets)
+                vl_loss_epoch, vl_metric_epoch = self.validation(vl_inputs, vl_targets)
                 vl_loss = np.append(vl_loss, vl_loss_epoch)
                 vl_metric = np.append(vl_metric, vl_metric_epoch)
                 if self.early_stopping and self.early_stopping.early_stop(vl_loss[epoch]):
@@ -108,6 +109,10 @@ class SGD():
             if verbose and epoch % 10 == 0:
                 print("Epoch: " + str(epoch) + " Training metric: " + str(tr_metric[epoch]) + " Validation metric: " + str(vl_metric[epoch]) +
                     "\n\tTraining loss: " + str(tr_loss[epoch]) + " Validation loss: " + str(vl_loss[epoch]))
+        
+        if verbose:
+            print("Last epoch "  + " Training metric: " + str(tr_metric[-1]) + " Validation metric: " + str(vl_metric[-1]) +
+                "\n\tTraining loss: " + str(tr_loss[-1]) + " Validation loss: " + str(vl_loss[-1]))
 
         # plot results
         if plot:
@@ -115,6 +120,13 @@ class SGD():
                 su.plot_results(tr_loss, tr_metric, vl_loss, vl_metric, self.network.loss.name, self.network.metric.name)
             else:
                 su.plot_results(tr_loss, tr_metric, None, None, self.network.loss.name, self.network.metric.name)
+
+        """
+        # print the prediction on the training set and the targets
+        f = open("prediction.txt", "w")
+        for i in range(len(tr_inputs)):
+            print("Prediction: " + str(self.network.foward_pass(tr_inputs[i])) + "     Target: " + str(tr_targets[i]), file=f)
+        """
     
 
     def fitting(self, tr_inputs, tr_targets, batch_size):
@@ -130,12 +142,12 @@ class SGD():
             curr_batch_size = len(b_tr_inputs)
 
             # get deltas for momentum
-            deltas = nu.get_deltas(self.network)
+            old_deltas = nu.get_deltas(self.network)
 
             # nesterov momentum
             if self.nesterov_momentum:
                 old_weights = nu.get_weights(self.network)
-                self.apply_nest_momentum(self.momentum_alpha, deltas)
+                self.apply_nest_momentum(self.momentum_alpha, old_deltas)
 
             # compute deltas
             b_tr_outputs = self.network.foward_pass(b_tr_inputs)
@@ -149,12 +161,12 @@ class SGD():
             # normalize deltas
             self.normalize_deltas(self.learning_rate, curr_batch_size)
 
+            # apply momentum
+            self.apply_momentum(self.momentum_alpha, old_deltas)
+
             # apply regularization
             current_regularization_lambda = self.regularization_lambda * curr_batch_size / len(tr_inputs)
             self.regularize(current_regularization_lambda, self.regularization)
-
-            # apply momentum
-            self.apply_momentum(self.momentum_alpha, deltas)
 
             # update weights
             self.update_weights()

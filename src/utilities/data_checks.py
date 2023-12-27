@@ -108,6 +108,15 @@ def check_param(parameters):
         elif key == "regularization_lambda":
             if parameters[key] < 0:
                 raise Exception("The regularization lambda must be greater or equal to 0")
+        elif key == "early_stopping":
+            if parameters[key] != True and parameters[key] != False:
+                raise Exception("The early stopping must be a boolean")
+        elif key == "patience":
+            if parameters[key] < 1:
+                raise Exception("The patience must be greater than 0")
+        elif key == "delta_percentage":
+            if parameters[key] < 0:
+                raise Exception("The delta percentage must be greater or equal to 0")
         else:
             print("The parameter " + key + " is not checked")
     return True

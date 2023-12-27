@@ -1,3 +1,5 @@
+import numpy as np
+
 class Decay_function(): 
     
     def __init__(self, func, name):
@@ -28,5 +30,6 @@ def linear(learning_rate, min_learning_rate, epoch, learning_rate_decay_epochs):
 
 
 decay_funcs = {
-    'linear': Decay_function(linear, "Linear")
+    'linear': Decay_function(linear, "Linear"),
+
 }
