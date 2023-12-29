@@ -69,7 +69,7 @@ class Grid_search():
                 i += 1
 
         network = Network(**best_net_comb)
-        training_istance = learning_methods["sgd"] (network, **best_tr_comb)
+        training_istance = learning_methods["gd"] (network, **best_tr_comb)
 
         if print_flag:
             try:

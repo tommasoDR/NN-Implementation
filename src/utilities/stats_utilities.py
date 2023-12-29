@@ -35,7 +35,7 @@ def plot_results(training_loss, training_metric, test_loss, test_metric, loss, m
     sns.lineplot(data=data, x=data.index, y=0, hue="Set", style="Set", palette=pal)
 
     plt.ylabel(loss, fontsize=15)
-    plt.ylim(0, 20)
+    plt.ylim(0, 10)
     plt.xlabel("Epochs", fontsize=15)
     plt.legend(title='')
 

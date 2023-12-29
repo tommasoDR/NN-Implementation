@@ -9,7 +9,7 @@ import numpy as np
 import math
 
 
-class SGD():
+class GD():
 
     def __init__(self, network, epochs, batch_size, learning_rate, learning_rate_decay, learning_rate_decay_func,
                  learning_rate_decay_epochs, min_learning_rate, momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda, early_stopping = False, patience = 20, delta_percentage = 0.03):
@@ -106,13 +106,13 @@ class SGD():
                     break
             
             # print epoch results
-            if verbose and epoch % 10 == 0:
-                print("Epoch: " + str(epoch) + " Training metric: " + str(tr_metric[epoch]) + " Validation metric: " + str(vl_metric[epoch]) +
-                    "\n\tTraining loss: " + str(tr_loss[epoch]) + " Validation loss: " + str(vl_loss[epoch]))
+            if verbose and epoch % 1 == 0:
+                print("Epoch: " + str(epoch) + "\tTraining metric: " + "{:.4f}".format(tr_metric[epoch]) + " Validation metric: " + "{:.4f}".format(vl_metric[epoch]) +
+                    "\n\t\tTraining loss: " + "{:.4f}".format(tr_loss[epoch]) + " Validation loss: " + "{:.4f}".format(vl_loss[epoch]) + "\n")
         
         if verbose:
-            print("Last epoch "  + " Training metric: " + str(tr_metric[-1]) + " Validation metric: " + str(vl_metric[-1]) +
-                "\n\tTraining loss: " + str(tr_loss[-1]) + " Validation loss: " + str(vl_loss[-1]))
+            print("Last epoch "  + "\tTraining metric: " + "{:.2f}".format(tr_metric[-1]) + " Validation metric: " + "{:.4f}".format(vl_metric[-1]) +
+                "\n\t\tTraining loss: " + "{:.4f}".format(tr_loss[-1]) + " Validation loss: " + "{:.4f}".format(vl_loss[-1]))
 
         # plot results
         if plot:
@@ -120,13 +120,6 @@ class SGD():
                 su.plot_results(tr_loss, tr_metric, vl_loss, vl_metric, self.network.loss.name, self.network.metric.name)
             else:
                 su.plot_results(tr_loss, tr_metric, None, None, self.network.loss.name, self.network.metric.name)
-
-        """
-        # print the prediction on the training set and the targets
-        f = open("prediction.txt", "w")
-        for i in range(len(tr_inputs)):
-            print("Prediction: " + str(self.network.foward_pass(tr_inputs[i])) + "     Target: " + str(tr_targets[i]), file=f)
-        """
     
 
     def fitting(self, tr_inputs, tr_targets, batch_size):
@@ -165,8 +158,9 @@ class SGD():
             self.apply_momentum(self.momentum_alpha, old_deltas)
 
             # apply regularization
-            current_regularization_lambda = self.regularization_lambda * curr_batch_size / len(tr_inputs)
-            self.regularize(current_regularization_lambda, self.regularization)
+            if self.regularization_lambda > 0:
+                current_regularization_lambda = self.regularization_lambda * curr_batch_size / len(tr_inputs)
+                self.regularize(current_regularization_lambda, self.regularization)
 
             # update weights
             self.update_weights()
@@ -262,5 +256,5 @@ class SGD():
             
 
 learning_methods = {
-    'sgd': SGD
+    'gd': GD
 }

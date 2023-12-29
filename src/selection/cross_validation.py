@@ -8,7 +8,7 @@ from utilities import stats_utilities as su
 def kfold_validation(net_comb, tr_comb, dataset_inputs, dataset_targets, num_folds):
 
     network = Network(**net_comb)
-    training_istance = learning_methods["sgd"] (network, **tr_comb)
+    training_istance = learning_methods["gd"] (network, **tr_comb)
 
     input_fold = np.array_split(dataset_inputs, num_folds)
     target_fold = np.array_split(dataset_targets, num_folds)

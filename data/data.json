@@ -9,7 +9,6 @@
     ],
 
     "loss_funcs": [
-        "squared_error",
         "mean_squared_error",
         "mean_euclidean_error",
         "cross_entropy_error"
@@ -30,7 +29,7 @@
     ],
 
     "learning_methods": [
-        "sgd"
+        "gd"
     ],
 
     "weight_inits_type": [

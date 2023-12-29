@@ -23,10 +23,10 @@ def binary_classification_accuracy(predictions, targets, output_func):
     :param target: the true output values.
     :return: the mean of number of different value between targets and predictions.
     """
-    if output_func == "Sigmoid":
+    if output_func == "sigmoid":
         threshold = 0.5
         labels = [0, 1]
-    elif output_func == "Tanh":
+    elif output_func == "tanh":
         threshold = 0
         labels = [-1, 1]
     else:
@@ -45,7 +45,7 @@ def binary_classification_accuracy(predictions, targets, output_func):
     return accuracy / len(targets)
 
 
-def ms_error(predictions, targets, _): 
+def mean_squared_error(predictions, targets, _): 
     """
     Calculate the Mean Square Error for all training examples.
 
@@ -69,6 +69,6 @@ def mean_euclidean_error(predictions, targets, _):
 
 metric_funcs = {
     "binary_classification_accuracy": Metric(binary_classification_accuracy, "Binary Classification Accuracy"),
-    "mean_squared_error": Metric(ms_error, "MSE"),
+    "mean_squared_error": Metric(mean_squared_error, "MSE"),
     "mean_euclidean_error": Metric(mean_euclidean_error, "MEE")
 }

@@ -47,7 +47,6 @@ def read_cup(normalize=False):
     tr_data = pd.read_csv(directory + file, sep=',', names=col_names[1:11], skiprows=range(7), usecols=range(1, 11))
     tr_targets = pd.read_csv(directory + file, sep=',', names=col_names[11:], skiprows=range(7), usecols=range(11, 14))
 
-
     file = "ML-CUP23-TS.csv"
     cup_ts_data = pd.read_csv(directory + file, sep=',', names=col_names[1:11], skiprows=range(7), usecols=range(1, 11))
 
@@ -56,9 +55,9 @@ def read_cup(normalize=False):
     tr_targets = tr_targets.to_numpy(dtype=np.float32)
     cup_ts_data = cup_ts_data.to_numpy(dtype=np.float32)
 
+    # Normalize the data
     if normalize:
-        # Normalize the data
-        tr_data = zscore(tr_data)
+        tr_data = zscore(tr_data, axis=0)
 
     # Shuffle the dataset
     tr_data, tr_targets = shuffle(tr_data, tr_targets)
