@@ -23,9 +23,8 @@ class Regularizzation_function():
 def l2_regularizer(w, lambd): 
     """
     Calculate the penalty term for L2 regularization.
-
-    :param w: A vector of weights.
-    :param lambd: Hyperparameter.
+    :param w: vector of weights.
+    :param lambd: hyperparameter for regularization.
     :return: The penalty term for L2 regularization.
     """
     return lambd * np.sum(np.square(w), axis=1)
@@ -34,9 +33,8 @@ def l2_regularizer(w, lambd):
 def l2_regularizer_der(w, lambd): 
     """""
     Calculate the derivative of penalty term for L2 regularization.
-
-    :param w: A vector of weights.
-    :param lambd: Hyperparameter.
+    :param w: vector of weights.
+    :param lambd: hyperparameter for regularization.
     :return: The derivative of penalty term for L2 regularization.
     """ 
     return lambd * w

@@ -1,6 +1,7 @@
 {
     "activation_funcs": [
         "relu",
+        "selu",
         "leaky_relu",
         "identity",
         "sigmoid",
@@ -8,7 +9,6 @@
     ],
 
     "loss_funcs": [
-        "squared_error",
         "mean_squared_error",
         "mean_euclidean_error",
         "cross_entropy_error"
@@ -21,8 +21,7 @@
     ],
 
     "decay_functions": [
-        "linear",
-        "exponential"
+        "linear"
     ],
 
     "regularization_func": [
@@ -30,7 +29,7 @@
     ],
 
     "learning_methods": [
-        "sgd"
+        "gd"
     ],
 
     "weight_inits_type": [

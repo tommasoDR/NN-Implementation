@@ -20,57 +20,35 @@ class Loss():
         return self.__loss_der
 
 
-def squared_error(predictions, targets):
-    """
-    Calculate the Square Error for all training examples.
-
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the Square Error between predictions and targets.
-    """
-    return np.sum(np.square(np.subtract(targets, predictions)), axis=1)
-
-
-def squared_error_der(predictions, targets):
-    """
-    Calculate the derivative of Square Error for all training examples.
-
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the derivative of Square Error between predictions and targets.
-    """
-    return - np.subtract(targets, predictions)
-
-
 def mean_squared_error(predictions, targets): 
     """
     Calculate the Mean Square Error for all training examples.
 
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the Least Mean Square Error between predictions and targets.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true target values.
+    :return: the result of the Mean Square Error between predictions and targets.
     """
     return np.mean(np.sum(np.square(np.subtract(targets, predictions)), axis=1), axis=0)
 
 
 def mean_squared_error_der(predictions, targets):
     """
-    Calculate the derivative of Mean Square error for all training examples.
+    Calculate the derivative of Mean Square Error for all training examples.
 
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the derivative of Least Mean Square Error between predictions and targets.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true target values.
+    :return: the result of the derivative of Mean Square Error between predictions and targets.
     """
-    return - np.subtract(targets, predictions) / len(predictions)
+    return - np.subtract(targets, predictions) #/ len(predictions)
 
 
 def mean_euclidean_error(predictions, targets): 
     """
     Calculate the Euclidean Error for all training examples.
 
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the Euclidean Error between predictions and targets.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true target values.
+    :return: the result of the Mean Euclidean Error between predictions and targets.
     """
     return np.mean(np.linalg.norm(np.subtract(targets, predictions), ord=2, axis=1), axis=0) 
 
@@ -79,15 +57,14 @@ def mean_euclidean_error_der(predictions, targets):
     """
     Calculate the derivative of Euclidean Error for all training examples.
 
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the derivative of Euclidean Error between predictions and targets.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true target values.
+    :return: the result of the derivative of Mean Euclidean Error between predictions and targets.
     """
-    return - np.subtract(targets, predictions) / (mean_euclidean_error(predictions, targets) * len(predictions))
+    return - np.subtract(targets, predictions) / (mean_euclidean_error(predictions, targets)) #* len(predictions))
 
 
 loss_funcs = {
-    "squared_error": Loss(squared_error, squared_error_der, "SE"),
     "mean_squared_error": Loss(mean_squared_error, mean_squared_error_der, "MSE"),
     "mean_euclidean_error": Loss(mean_euclidean_error, mean_euclidean_error_der, "MEE")
 }

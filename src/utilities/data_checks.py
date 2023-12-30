@@ -1,15 +1,17 @@
 import json
 
+
 def check_param(parameters):
     """
     Checks if the parameters are valid
     :return: True if the parameters are valid, False otherwise
     """
     try:
-        f = open('../data/data.json')
+        f = open("../data/data.json")
     except Exception as e:
-        print(e); exit(1)
-    
+        print(e)
+        exit(1)
+
     json_data = json.load(f)
 
     activation_funcs = json_data["activation_funcs"]
@@ -21,7 +23,10 @@ def check_param(parameters):
     decay_functions = json_data["decay_functions"]
 
     for key in parameters.keys():
-        if key == "num_layers":
+        if key == "input_dimension":
+            if parameters[key] < 1:
+                raise Exception("The input dimension must be greater than 0")
+        elif key == "num_layers":
             if parameters[key] < 2:
                 raise Exception("The number of layers must be greater than 1")
         elif key == "layers_sizes":
@@ -39,7 +44,7 @@ def check_param(parameters):
         elif key == "loss_func":
             if str(parameters[key]) not in loss_funcs:
                 raise Exception("The loss function is not valid")
-        elif key == "metric_function":
+        elif key == "metric_func":
             if str(parameters[key]) not in metric_funcs:
                 raise Exception("The metric function is not valid")
         elif key == "regularization_func":
@@ -58,6 +63,16 @@ def check_param(parameters):
                 continue
             if parameters[key][1] < parameters[key][0]:
                 raise Exception("The weight initialization range upper bound must be greater than the lower bound")
+        elif key == "epochs":
+            if parameters[key] < 1:
+                raise Exception("The number of epochs must be greater than 0")
+        elif key == "batch_size":
+            if str(parameters[key]) == "all":
+                continue
+            elif not isinstance(parameters[key], int):
+                raise Exception('The batch size must be an integer or "all"')
+            elif parameters[key] < 1:
+                raise Exception("The batch size must be greater than 0")
         elif key == "learning_rate":
             if parameters[key] <= 0:
                 raise Exception("The learning rate must be greater than 0")
@@ -65,14 +80,20 @@ def check_param(parameters):
             if parameters[key] != True and parameters[key] != False:
                 raise Exception("The learning rate decay must be a boolean")
         elif key == "learning_rate_decay_func":
+            if parameters[key] is None:
+                continue
             if str(parameters[key]) not in decay_functions:
                 raise Exception("The learning rate decay function is not valid")
         elif key == "learning_rate_decay_epochs":
+            if parameters[key] is None:
+                continue
             if parameters[key] < 1:
                 raise Exception("The learning rate decay epochs must be greater than 0")
         elif key == "min_learning_rate":
-            if parameters[key] <= 0:
-                raise Exception("The minimum learning rate must be greater than 0")
+            if parameters[key] is None:
+                continue
+            if parameters[key] < 0:
+                raise Exception("The minimum learning rate must be greater or equal to 0")
             if parameters[key] > parameters["learning_rate"]:
                 raise Exception("The minimum learning rate must be less than the learning rate")
         elif key == "momentum_alpha":
@@ -95,6 +116,15 @@ def check_param(parameters):
         elif key == "regularization_lambda":
             if parameters[key] < 0:
                 raise Exception("The regularization lambda must be greater or equal to 0")
+        elif key == "early_stopping":
+            if parameters[key] != True and parameters[key] != False:
+                raise Exception("The early stopping must be a boolean")
+        elif key == "patience":
+            if parameters[key] < 1:
+                raise Exception("The patience must be greater than 0")
+        elif key == "delta_percentage":
+            if parameters[key] < 0:
+                raise Exception("The delta percentage must be greater or equal to 0")
         else:
             print("The parameter " + key + " is not checked")
     return True
@@ -110,10 +140,10 @@ def check_sets(inputs, expected_inputs_dim, targets=None, expected_targets_dim=N
     for input in inputs:
         if len(input) != expected_inputs_dim:
             raise Exception("The dimension of the input data is not valid")
-        
+
     if targets is None:
         return True
-    
+
     for target in targets:
         if len(target) != expected_targets_dim:
             raise Exception("The dimension of the target data is not valid")
@@ -121,3 +151,26 @@ def check_sets(inputs, expected_inputs_dim, targets=None, expected_targets_dim=N
     if len(inputs) != len(targets):
         raise Exception("The number of inputs and targets must be the same")
     return True
+
+
+def remove_unfeasible_combinations(combinations):
+    """
+    Removes the unfeasible combinations from the list of combinations
+    :param combinations: The list of combinations
+    :return: The list of feasible combinations
+    """
+    index_to_remove = []
+    for i, combination in enumerate(combinations):
+        try:
+            check_param(combination)
+        except Exception:
+            index_to_remove.append(i)
+            continue
+
+    for index in sorted(index_to_remove, reverse=True):
+        del combinations[index]
+
+    if len(combinations) == 0:
+        raise Exception("No feasible combinations")
+
+    return combinations

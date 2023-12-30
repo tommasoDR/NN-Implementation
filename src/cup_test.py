@@ -1,22 +1,27 @@
 from utilities import datasets_utilities
+from selection import cross_validation
+from selection import grid_search
 from network import Network
-from training import learning_methods
+import training
+import pprint
 
 
 if __name__ == '__main__':
-    # Read the datasets
-    inputs, targets, _ = datasets_utilities.read_cup()
 
+    # Read the datasets
+    inputs, targets, cup_inputs = datasets_utilities.read_cup()
+    test_inputs, test_targets = datasets_utilities.read_cup_holdout()
+    
     # Split the datasets
-    training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.15)
+    #training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.20)
     
     net_parameters = {
         "input_dimension": 10,
-        "num_layers": 4,
-        "layers_sizes": [32, 32, 32, 3],
-        "layers_activation_funcs": ["leaky_relu", "leaky_relu", "tanh" , "identity"],
-        #"weight_init_type": "random_uniform",
-        #"weight_init_range": [-0.7, 0.7]
+        "num_layers": 5,
+        "layers_sizes": [150, 150, 150, 150, 3],
+        "layers_activation_funcs": ["selu", "selu", "selu", "selu", "identity"],
+        "loss_func": "mean_squared_error",
+        "metric_func": "mean_euclidean_error",
         "weight_init_type": "glorot_bengio"
     }
 
@@ -26,20 +31,100 @@ if __name__ == '__main__':
     # Train the network
     train_parameters = {
         "network": network,
-        "loss_function": "mean_squared_error",
-        "metric_function": "mean_euclidean_error",
-        "learning_rate": 0.006,
-        "learning_rate_decay": True,
+        "epochs": 1500,
+        "batch_size": "all",  
+        "learning_rate": 0.0006,
+        "learning_rate_decay": False,
         "learning_rate_decay_func": "linear",
-        "learning_rate_decay_epochs": 2000,
-        "min_learning_rate": 0.003,
-        "momentum_alpha": 0.5,
+        "learning_rate_decay_epochs": 500,
+        "min_learning_rate": 0.00005,
+        "momentum_alpha": 0.9,
         "nesterov_momentum": False,
         "regularization_func": "L2",
-        "regularization_lambda": 0.000
+        "regularization_lambda": 0,
+        "early_stopping": False,
+        "patience": 25,
+        "delta_percentage": 0.03
     }
 
-    training_istance = learning_methods["sgd"](**train_parameters)
+    training_istance = training.learning_methods["gd"](**train_parameters)
     
-    training_istance.training(training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets, 4000, 50, plot=True)
+    training_istance.training(inputs, targets, test_inputs, test_targets, verbose=True, plot=True)
 
+    datasets_utilities.write_predictions(network.predict(cup_inputs), "predictions")
+
+
+"""
+# Example of cross validation
+    # Read the datasets
+    inputs, targets, _ = datasets_utilities.read_cup()
+    
+    tr_combinations = {
+        "epochs": [15000],
+        "batch_size": ["all"],
+        "learning_rate": [0.0008, 0.0006],
+        "learning_rate_decay": [False],
+        "learning_rate_decay_func": ["linear"],
+        "learning_rate_decay_epochs": [2000],
+        "min_learning_rate": [0],
+        "momentum_alpha": [0.9],
+        "nesterov_momentum": [False],
+        "regularization_func": ["L2"],
+        "regularization_lambda": [0, 0.00001, 0.00005]
+    }
+
+    net_combinations = {
+        "input_dimension": [10],
+        "num_layers": [4, 5],
+        "layers_sizes": [[200, 200, 200, 3], [150, 150, 150, 150, 3]],
+        "layers_activation_funcs": [["relu", "relu", "relu", "identity"], ["selu", "selu", "selu", "selu", "identity"]],
+        "loss_func": ["mean_squared_error"],
+        "metric_func": ["mean_euclidean_error"],
+        "weight_init_type": ["glorot_bengio"]
+    }
+
+    model_sel = grid_search.Grid_search(net_combinations, tr_combinations, inputs, targets, 5)
+    network, training_istance, result = model_sel.grid_search(print_flag = True)
+
+    #stats = cross_validation.double_kfolds_validation(net_combinations, tr_combinations, inputs, targets, 3)
+
+    #pprint.pprint(stats, sort_dicts=False)
+
+"""
+
+
+"""
+# Keras example
+from matplotlib import pyplot as plt
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.optimizers import SGD
+
+model = Sequential()
+model.add(Dense(40, input_dim=10, activation='selu'))
+model.add(Dense(40, activation='selu'))
+model.add(Dense(40, activation='selu'))
+model.add(Dense(40, activation='selu'))
+model.add(Dense(3))
+
+# Read the datasets
+inputs, targets, _ = datasets_utilities.read_cup()
+
+model.compile(loss='mean_squared_error', optimizer= SGD(learning_rate=0.001, momentum=0.9), metrics=['MeanSquaredError'])
+
+training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.20)
+history = model.fit(training_set_inputs, training_set_targets, epochs=5000, batch_size=720, verbose=1, validation_data=(validation_set_inputs, validation_set_targets))
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.ylim(0, 10)
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.savefig('keras.png', bbox_inches='tight')
+# model.summary()
+#errors = model.evaluate(validation_set_inputs, validation_set_targets)
+#print("\nErrors:")
+#print(errors)
+"""
