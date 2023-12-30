@@ -18,10 +18,9 @@ class Metric():
 def binary_classification_accuracy(predictions, targets, output_func): 
     """
     Calculate the accuracy for classification.
-
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the mean of number of different value between targets and predictions.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true targets values.
+    :return: the accuracy of the predictions.
     """
     if output_func == "sigmoid":
         threshold = 0.5
@@ -48,10 +47,9 @@ def binary_classification_accuracy(predictions, targets, output_func):
 def mean_squared_error(predictions, targets, _): 
     """
     Calculate the Mean Square Error for all training examples.
-
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the Least Mean Square error between predictions and targets.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true targets values.
+    :return: the result of the Mean Square Error between predictions and targets.
     """
     return np.mean(np.sum(np.square(np.subtract(targets, predictions)), axis=1), axis=0)
 
@@ -59,10 +57,9 @@ def mean_squared_error(predictions, targets, _):
 def mean_euclidean_error(predictions, targets, _): 
     """
     Calculate the Euclidean error for all training examples.
-
-    :param predicted: the values predicted by the neural network.
-    :param target: the true output values.
-    :return: the result of the Euclidean error between predictions and targets.
+    :param predictions: the values predicted by the neural network.
+    :param targets: the true targets values.
+    :return: the result of the Mean Euclidean Error between predictions and targets.
     """
     return np.mean(np.linalg.norm(np.subtract(targets, predictions), ord=2, axis=1), axis=0)
 

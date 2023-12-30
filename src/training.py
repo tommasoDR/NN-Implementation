@@ -1,29 +1,73 @@
-from utilities import data_checks as dc
-from utilities import network_utilities as nu
 from utilities import datasets_utilities as du
-from utilities import stats_utilities as su  
+from utilities import network_utilities as nu
+from utilities import stats_utilities as su
+from utilities import data_checks as dc
 from functions import regularization_functions
-from functions import decay_functions
 from selection import early_stopping as es
+from functions import decay_functions
 import numpy as np
-import math
 
 
-class GD():
+class GD:
+    def __init__(
+        self,
+        network,
+        epochs,
+        batch_size,
+        learning_rate,
+        momentum_alpha,
+        nesterov_momentum,
+        regularization_func,
+        regularization_lambda,
+        learning_rate_decay = False,
+        learning_rate_decay_func = None,
+        learning_rate_decay_epochs = None,
+        min_learning_rate = None,
+        early_stopping = False,
+        patience=20,
+        delta_percentage=0.03,
+    ):
+        """
+        Initializes the gradient descent method
+        :param network: The network to train
+        :param epochs: The number of epochs
+        :param batch_size: The size of the minibatch
+        :param learning_rate: The learning rate
+        :param min_learning_rate: The minimum learning rate
+        :param momentum_alpha: The momentum alpha
+        :param nesterov_momentum: If True applies nesterov momentum
+        :param regularization_func: The regularization function
+        :param regularization_lambda: The regularization lambda
+        :param learning_rate_decay: If True applies learning rate decay
+        :param learning_rate_decay_func: The learning rate decay function
+        :param learning_rate_decay_epochs: The number of epochs after which the learning rate decays
+        :param early_stopping: If True applies early stopping
+        :param patience: The patience of the early stopping
+        :param delta_percentage: The delta percentage of the early stopping
+        """
 
-    def __init__(self, network, epochs, batch_size, learning_rate, learning_rate_decay, learning_rate_decay_func,
-                 learning_rate_decay_epochs, min_learning_rate, momentum_alpha, nesterov_momentum, regularization_func, regularization_lambda, early_stopping = False, patience = 20, delta_percentage = 0.03):
-        
+        # Check parameters
         try:
-            parameters= {"epochs": epochs, "batch_size":batch_size, "learning_rate": learning_rate, "learning_rate_decay": learning_rate_decay,
-                         "learning_rate_decay_func": learning_rate_decay_func, "learning_rate_decay_epochs": learning_rate_decay_epochs,
-                         "min_learning_rate": min_learning_rate, "momentum_alpha": momentum_alpha, "nesterov_momentum": nesterov_momentum,
-                         "regularization_func": regularization_func,"regularization_lambda": regularization_lambda,
-                         "early_stopping": early_stopping, "patience": patience, "delta_percentage": delta_percentage
-                         }
+            parameters = {
+                "epochs": epochs,
+                "batch_size": batch_size,
+                "learning_rate": learning_rate,
+                "learning_rate_decay": learning_rate_decay,
+                "learning_rate_decay_func": learning_rate_decay_func,
+                "learning_rate_decay_epochs": learning_rate_decay_epochs,
+                "min_learning_rate": min_learning_rate,
+                "momentum_alpha": momentum_alpha,
+                "nesterov_momentum": nesterov_momentum,
+                "regularization_func": regularization_func,
+                "regularization_lambda": regularization_lambda,
+                "early_stopping": early_stopping,
+                "patience": patience,
+                "delta_percentage": delta_percentage,
+            }
             dc.check_param(parameters)
         except Exception as e:
-            print(e); exit(1)
+            print(e)
+            exit(1)
 
         self.network = network
         self.epochs = epochs
@@ -44,8 +88,16 @@ class GD():
         else:
             self.early_stopping = None
 
-    
-    def training(self, tr_inputs, tr_targets, vl_inputs = None, vl_targets = None, verbose = False, plot = False):
+
+    def training(
+        self,
+        tr_inputs,
+        tr_targets,
+        vl_inputs=None,
+        vl_targets=None,
+        verbose=False,
+        plot=False,
+    ):
         """
         Trains the network
         :param tr_set_inputs: The training set inputs
@@ -56,81 +108,125 @@ class GD():
         :param plot: If True plots the results of the training
         :return: The trained network
         """
-        # check inputs and targets dimensions of training set
+        # Check inputs and targets dimensions of training set
         try:
-            dc.check_sets(tr_inputs, self.network.input_dim, tr_targets, self.network.output_dim)
+            dc.check_sets(
+                tr_inputs, self.network.input_dim, tr_targets, self.network.output_dim
+            )
         except Exception as e:
-            print(e); exit(1)
+            print(e)
+            exit(1)
 
-        # validation True if validation set is present
+        # Validation True if validation set is present
         validation = vl_inputs is not None and vl_targets is not None
 
-        # check inputs and targets dimensions of validation set
+        # Check inputs and targets dimensions of validation set
         if validation:
             try:
-                dc.check_sets(vl_inputs, self.network.input_dim, vl_targets, self.network.output_dim)
+                dc.check_sets(
+                    vl_inputs,
+                    self.network.input_dim,
+                    vl_targets,
+                    self.network.output_dim
+                )
             except Exception as e:
-                print(e); exit(1)
+                print(e)
+                exit(1)
 
         if self.batch_size == "all":
             self.batch_size = len(tr_inputs)
-        
+
         tr_loss = np.array([])
         tr_metric = np.array([])
 
         if validation:
-            vl_loss = np.array([]) 
+            vl_loss = np.array([])
             vl_metric = np.array([])
 
         # training loop
         for epoch in range(self.epochs):
 
             # one epoch of training
-            tr_loss_epoch, tr_metric_epoch = self.fitting(tr_inputs, tr_targets, self.batch_size)
+            tr_loss_epoch, tr_metric_epoch = self.fitting(
+                tr_inputs, tr_targets, self.batch_size
+            )
 
+            # store loss and metric of the epoch
             tr_loss = np.append(tr_loss, tr_loss_epoch)
-            tr_metric = np.append(tr_metric, tr_metric_epoch)   
-                
-            # apply learning rate decay   
+            tr_metric = np.append(tr_metric, tr_metric_epoch)
+
+            # apply learning rate decay
             if self.learning_rate_decay:
-                self.learning_rate = self.decay.function(self.starting_learning_rate, self.minimum_learning_rate, epoch, self.learning_rate_decay_epochs)
+                self.learning_rate = self.decay.function(
+                    self.starting_learning_rate,
+                    self.minimum_learning_rate,
+                    epoch,
+                    self.learning_rate_decay_epochs,
+                )
 
             # compute loss and metric on validation set
             if validation:
                 vl_loss_epoch, vl_metric_epoch = self.validation(vl_inputs, vl_targets)
                 vl_loss = np.append(vl_loss, vl_loss_epoch)
                 vl_metric = np.append(vl_metric, vl_metric_epoch)
+                
+                # check early stopping
                 if self.early_stopping and self.early_stopping.early_stop(vl_loss[epoch]):
                     if verbose:
                         print("Early stopping at epoch: " + str(epoch))
                     break
-            
+
             # print epoch results
-            if verbose and epoch % 1 == 0:
-                print("Epoch: " + str(epoch) + "\tTraining metric: " + "{:.4f}".format(tr_metric[epoch]) + " Validation metric: " + "{:.4f}".format(vl_metric[epoch]) +
-                    "\n\t\tTraining loss: " + "{:.4f}".format(tr_loss[epoch]) + " Validation loss: " + "{:.4f}".format(vl_loss[epoch]) + "\n")
-        
-        if verbose:
-            print("Last epoch "  + "\tTraining metric: " + "{:.2f}".format(tr_metric[-1]) + " Validation metric: " + "{:.4f}".format(vl_metric[-1]) +
-                "\n\t\tTraining loss: " + "{:.4f}".format(tr_loss[-1]) + " Validation loss: " + "{:.4f}".format(vl_loss[-1]))
+            if verbose:
+                print(
+                    "Epoch: "
+                    + str(epoch)
+                    + "\tTraining metric: "
+                    + "{:.4f}".format(tr_metric[epoch])
+                    + " Validation metric: "
+                    + "{:.4f}".format(vl_metric[epoch])
+                    + "\n\t\tTraining loss: "
+                    + "{:.4f}".format(tr_loss[epoch])
+                    + " Validation loss: "
+                    + "{:.4f}".format(vl_loss[epoch])
+                    + "\n"
+                )
 
         # plot results
         if plot:
             if validation:
-                su.plot_results(tr_loss, tr_metric, vl_loss, vl_metric, self.network.loss.name, self.network.metric.name)
+                su.plot_results(
+                    tr_loss,
+                    tr_metric,
+                    vl_loss,
+                    vl_metric,
+                    self.network.loss.name,
+                    self.network.metric.name,
+                )
             else:
-                su.plot_results(tr_loss, tr_metric, None, None, self.network.loss.name, self.network.metric.name)
-    
+                su.plot_results(
+                    tr_loss,
+                    tr_metric,
+                    None,
+                    None,
+                    self.network.loss.name,
+                    self.network.metric.name,
+                )
+
 
     def fitting(self, tr_inputs, tr_targets, batch_size):
-            
+        """
+        Executes one epoch of training
+        """
+
         # shuffle training set
         tr_inputs, tr_targets = du.shuffle(tr_inputs, tr_targets)
 
         # iterates on minibatches
-        num_batch = math.ceil(len(tr_inputs) / batch_size)
+        num_batch = int(np.ceil(len(tr_inputs) / batch_size))
 
         for batch_index in range(num_batch):
+            # generate minibatch
             b_tr_inputs, b_tr_targets = self.generate_batch(tr_inputs, tr_targets, batch_index, batch_size)
             curr_batch_size = len(b_tr_inputs)
 
@@ -155,11 +251,12 @@ class GD():
             self.normalize_deltas(self.learning_rate, curr_batch_size)
 
             # apply momentum
-            self.apply_momentum(self.momentum_alpha, old_deltas)
+            if self.momentum_alpha > 0:
+                self.apply_momentum(self.momentum_alpha, old_deltas)
 
             # apply regularization
             if self.regularization_lambda > 0:
-                current_regularization_lambda = self.regularization_lambda * curr_batch_size / len(tr_inputs)
+                current_regularization_lambda = (self.regularization_lambda * curr_batch_size / len(tr_inputs))
                 self.regularize(current_regularization_lambda, self.regularization)
 
             # update weights
@@ -201,7 +298,7 @@ class GD():
         b_tr_inputs = np.array(tr_inputs[start:end])
         b_tr_targets = np.array(tr_targets[start:end])
         return b_tr_inputs, b_tr_targets
-    
+
 
     def normalize_deltas(self, learning_rate, batch_size):
         """
@@ -213,24 +310,24 @@ class GD():
             layer.normalize_deltas(learning_rate, batch_size)
 
 
-    def apply_momentum(self, momentum_alpha, deltas):
+    def apply_momentum(self, momentum_alpha, old_deltas):
         """
         Applies the momentum to the weights of the network
         :param old_deltas: The deltas of the previous epoch
         :return: None
         """
-        for i,layer in enumerate(self.network.layers):
-            layer.apply_momentum(momentum_alpha, deltas[i])
+        for i, layer in enumerate(self.network.layers):
+            layer.apply_momentum(momentum_alpha, old_deltas[i])
 
     
-    def apply_nest_momentum(self, momentum_alpha, deltas):
+    def apply_nest_momentum(self, momentum_alpha, old_deltas):
         """
-        Applies the nesterov momentum to the weights of the network
-        :param deltas: The deltas of the previous epoch
+        Applies the momentum to the weights of the network
+        :param old_deltas: The deltas of the previous epoch
         :return: None
         """
-        for i,layer in enumerate(self.network.layers):
-            layer.apply_nest_momentum(momentum_alpha, deltas[i])
+        for i, layer in enumerate(self.network.layers):
+            layer.apply_nest_momentum(momentum_alpha, old_deltas[i])
 
 
     def update_weights(self):
@@ -244,7 +341,7 @@ class GD():
         for layer in self.network.layers:
             layer.update_weights()
 
-    
+
     def regularize(self, regularization_lambda, regularization):
         """
         Applies regularization to the weights of the network
@@ -253,8 +350,6 @@ class GD():
         """
         for layer in self.network.layers:
             layer.regularize(regularization_lambda, regularization)
-            
 
-learning_methods = {
-    'gd': GD
-}
+
+learning_methods = {"gd": GD}

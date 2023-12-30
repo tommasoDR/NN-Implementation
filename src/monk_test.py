@@ -1,6 +1,6 @@
 from utilities import datasets_utilities
 from network import Network
-from training import learning_methods
+import training 
 
 
 if __name__ == '__main__':
@@ -40,7 +40,6 @@ if __name__ == '__main__':
         "regularization_lambda": 0.01
     }
 
-    training_istance = learning_methods["gd"](**train_parameters)
+    training_istance = training.learning_methods["gd"](**train_parameters)
     
     training_istance.training(inputs, targets, test_inputs, test_targets, verbose=True, plot=True)
-

@@ -1,15 +1,17 @@
 import json
 
+
 def check_param(parameters):
     """
     Checks if the parameters are valid
     :return: True if the parameters are valid, False otherwise
     """
     try:
-        f = open('../data/data.json')
+        f = open("../data/data.json")
     except Exception as e:
-        print(e); exit(1)
-    
+        print(e)
+        exit(1)
+
     json_data = json.load(f)
 
     activation_funcs = json_data["activation_funcs"]
@@ -68,7 +70,7 @@ def check_param(parameters):
             if str(parameters[key]) == "all":
                 continue
             elif not isinstance(parameters[key], int):
-                raise Exception("The batch size must be an integer or \"all\"")
+                raise Exception('The batch size must be an integer or "all"')
             elif parameters[key] < 1:
                 raise Exception("The batch size must be greater than 0")
         elif key == "learning_rate":
@@ -78,12 +80,18 @@ def check_param(parameters):
             if parameters[key] != True and parameters[key] != False:
                 raise Exception("The learning rate decay must be a boolean")
         elif key == "learning_rate_decay_func":
+            if parameters[key] is None:
+                continue
             if str(parameters[key]) not in decay_functions:
                 raise Exception("The learning rate decay function is not valid")
         elif key == "learning_rate_decay_epochs":
+            if parameters[key] is None:
+                continue
             if parameters[key] < 1:
                 raise Exception("The learning rate decay epochs must be greater than 0")
         elif key == "min_learning_rate":
+            if parameters[key] is None:
+                continue
             if parameters[key] < 0:
                 raise Exception("The minimum learning rate must be greater or equal to 0")
             if parameters[key] > parameters["learning_rate"]:
@@ -132,10 +140,10 @@ def check_sets(inputs, expected_inputs_dim, targets=None, expected_targets_dim=N
     for input in inputs:
         if len(input) != expected_inputs_dim:
             raise Exception("The dimension of the input data is not valid")
-        
+
     if targets is None:
         return True
-    
+
     for target in targets:
         if len(target) != expected_targets_dim:
             raise Exception("The dimension of the target data is not valid")
@@ -146,16 +154,23 @@ def check_sets(inputs, expected_inputs_dim, targets=None, expected_targets_dim=N
 
 
 def remove_unfeasible_combinations(combinations):
+    """
+    Removes the unfeasible combinations from the list of combinations
+    :param combinations: The list of combinations
+    :return: The list of feasible combinations
+    """
     index_to_remove = []
     for i, combination in enumerate(combinations):
         try:
             check_param(combination)
-        except Exception as e:
-            print(e)
+        except Exception:
             index_to_remove.append(i)
             continue
-    
+
     for index in sorted(index_to_remove, reverse=True):
         del combinations[index]
+
+    if len(combinations) == 0:
+        raise Exception("No feasible combinations")
 
     return combinations

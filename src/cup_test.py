@@ -1,14 +1,61 @@
-from matplotlib import pyplot as plt
 from utilities import datasets_utilities
-from network import Network
-from training import learning_methods
-from selection import grid_search
 from selection import cross_validation
+from selection import grid_search
+from network import Network
+import training
 import pprint
 
 
 if __name__ == '__main__':
-    """
+
+    # Read the datasets
+    inputs, targets, cup_inputs = datasets_utilities.read_cup()
+    test_inputs, test_targets = datasets_utilities.read_cup_holdout()
+    
+    # Split the datasets
+    #training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.20)
+    
+    net_parameters = {
+        "input_dimension": 10,
+        "num_layers": 5,
+        "layers_sizes": [150, 150, 150, 150, 3],
+        "layers_activation_funcs": ["selu", "selu", "selu", "selu", "identity"],
+        "loss_func": "mean_squared_error",
+        "metric_func": "mean_euclidean_error",
+        "weight_init_type": "glorot_bengio"
+    }
+
+    # Create the network
+    network = Network(**net_parameters)
+
+    # Train the network
+    train_parameters = {
+        "network": network,
+        "epochs": 1500,
+        "batch_size": "all",  
+        "learning_rate": 0.0006,
+        "learning_rate_decay": False,
+        "learning_rate_decay_func": "linear",
+        "learning_rate_decay_epochs": 500,
+        "min_learning_rate": 0.00005,
+        "momentum_alpha": 0.9,
+        "nesterov_momentum": False,
+        "regularization_func": "L2",
+        "regularization_lambda": 0,
+        "early_stopping": False,
+        "patience": 25,
+        "delta_percentage": 0.03
+    }
+
+    training_istance = training.learning_methods["gd"](**train_parameters)
+    
+    training_istance.training(inputs, targets, test_inputs, test_targets, verbose=True, plot=True)
+
+    datasets_utilities.write_predictions(network.predict(cup_inputs), "predictions")
+
+
+"""
+# Example of cross validation
     # Read the datasets
     inputs, targets, _ = datasets_utilities.read_cup()
     
@@ -43,55 +90,12 @@ if __name__ == '__main__':
 
     #pprint.pprint(stats, sort_dicts=False)
 
-    """
-
-    # Read the datasets
-    inputs, targets, cup_inputs = datasets_utilities.read_cup()
-    test_inputs, test_targets = datasets_utilities.read_cup_test()
-    
-    # Split the datasets
-    #training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.20)
-    
-    net_parameters = {
-        "input_dimension": 10,
-        "num_layers": 5,
-        "layers_sizes": [150, 150, 150, 150, 3],
-        "layers_activation_funcs": ["selu", "selu", "selu", "selu", "identity"],
-        "loss_func": "mean_squared_error",
-        "metric_func": "mean_euclidean_error",
-        "weight_init_type": "glorot_bengio"
-    }
-
-    # Create the network
-    network = Network(**net_parameters)
-
-    # Train the network
-    train_parameters = {
-        "network": network,
-        "epochs": 15000,
-        "batch_size": "all",  
-        "learning_rate": 0.0007,
-        "learning_rate_decay": False,
-        "learning_rate_decay_func": "linear",
-        "learning_rate_decay_epochs": 500,
-        "min_learning_rate": 0.00005,
-        "momentum_alpha": 0.9,
-        "nesterov_momentum": False,
-        "regularization_func": "L2",
-        "regularization_lambda": 0.0000,
-        "early_stopping": False,
-        "patience": 25,
-        "delta_percentage": 0.03
-    }
-
-    training_istance = learning_methods["gd"](**train_parameters)
-    
-    training_istance.training(inputs, targets, test_inputs, test_targets, verbose=True, plot=True)
-
-    datasets_utilities.write_predictions(network.predict(cup_inputs), "predictions")
+"""
 
 
 """
+# Keras example
+from matplotlib import pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
