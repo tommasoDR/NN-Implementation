@@ -65,6 +65,43 @@ def read_cup(normalize=False):
     return tr_data, tr_targets, cup_ts_data
 
 
+def read_cup_test(normalize=False):
+    col_names = ['id', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6', 'col_7', 'col_8', 'col_9', 'col_10', 'target_x', 'target_y', 'target_z']
+
+    directory = "../datasets/cup/"
+    file = "Test.csv"    
+
+    # Read training data and targets and test set from csv files 
+    ts_data = pd.read_csv(directory + file, sep=',', names=col_names[1:11], usecols=range(1, 11))
+    ts_targets = pd.read_csv(directory + file, sep=',', names=col_names[11:],  usecols=range(11, 14))
+
+    # Transform dataframes into numpy arrays
+    ts_data = ts_data.to_numpy(dtype=np.float32)
+    ts_targets = ts_targets.to_numpy(dtype=np.float32)
+
+    # Normalize the data
+    if normalize:
+        ts_data = zscore(ts_data, axis=0)
+
+    return ts_data, ts_targets
+
+
+def write_predictions(predictions, filename):
+    """
+    Writes the predictions to a cvs file
+    :param predictions: The predictions
+    :param filename: The name of the file to write the predictions to
+    """
+    f = open(f"selection/results/{filename}.csv", "w")
+    for i in range(len(predictions)):
+        for j in range(len(predictions[i])):
+            if j != 0:
+                f.write(",")
+            f.write(str(predictions[i][j]))
+        f.write("\n")
+    f.close()
+
+
 def shuffle(inputs, targets):
     indexes = np.random.permutation(len(inputs))
     return inputs[indexes], targets[indexes]

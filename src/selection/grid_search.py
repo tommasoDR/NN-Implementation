@@ -52,7 +52,7 @@ class Grid_search():
 
         for net_comb in net_combs: 
             for tr_comb in tr_combs:
-
+               
                 results[f"comb_{i}"] = kfold_validation(net_comb, tr_comb, self.dataset_inputs, self.dataset_targets, self.num_folds)
 
                 # Save the best combination

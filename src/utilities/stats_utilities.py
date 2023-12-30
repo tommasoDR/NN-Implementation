@@ -12,8 +12,8 @@ def plot_results(training_loss, training_metric, test_loss, test_metric, loss, m
     t = time.localtime()
     current_time = time.strftime("%H_%M_%S", t)
     
-    path_loss = f"../plots/loss_{current_time}.pdf"
-    path_metric = f"../plots/metric_{current_time}.pdf"
+    path_loss = f"../plots/loss_{current_time}.png"
+    path_metric = f"../plots/metric_{current_time}.png"
 
     loss = loss.replace("_", " ")
     metric = metric.replace("_", " ")
@@ -24,7 +24,7 @@ def plot_results(training_loss, training_metric, test_loss, test_metric, loss, m
     
     if test_loss is not None:
         test_loss_df = pd.DataFrame(test_loss)
-        test_loss_df["Set"] = "Test"
+        test_loss_df["Set"] = "Validation"
         data = pd.concat([training_loss_df, test_loss_df])
         pal = ["blue", "red"]
     else:
@@ -39,7 +39,7 @@ def plot_results(training_loss, training_metric, test_loss, test_metric, loss, m
     plt.xlabel("Epochs", fontsize=15)
     plt.legend(title='')
 
-    plt.savefig(path_loss, format='pdf', dpi=600, bbox_inches="tight")
+    plt.savefig(path_loss, format='png', dpi=600, bbox_inches="tight")
     plt.close()
 
     # Create the dataframe of the metric
@@ -48,7 +48,7 @@ def plot_results(training_loss, training_metric, test_loss, test_metric, loss, m
     
     if test_metric is not None:
         test_metric_df = pd.DataFrame(test_metric)
-        test_metric_df["Set"] = "Test"
+        test_metric_df["Set"] = "Validation"
         data = pd.concat([training_metric_df, test_metric_df])
         pal = ["blue", "red"]
     else:
@@ -59,10 +59,11 @@ def plot_results(training_loss, training_metric, test_loss, test_metric, loss, m
     sns.lineplot(data=data, x=data.index, y=0, hue="Set", style="Set", palette=pal)
 
     plt.ylabel(metric, fontsize=15)
+    plt.ylim(0, 5)
     plt.xlabel("Epochs", fontsize=15)
     plt.legend(title='')
 
-    plt.savefig(path_metric, format='pdf', dpi=600, bbox_inches="tight")
+    plt.savefig(path_metric, format='png', dpi=600, bbox_inches="tight")
     plt.close()
 
 

@@ -84,8 +84,8 @@ def check_param(parameters):
             if parameters[key] < 1:
                 raise Exception("The learning rate decay epochs must be greater than 0")
         elif key == "min_learning_rate":
-            if parameters[key] <= 0:
-                raise Exception("The minimum learning rate must be greater than 0")
+            if parameters[key] < 0:
+                raise Exception("The minimum learning rate must be greater or equal to 0")
             if parameters[key] > parameters["learning_rate"]:
                 raise Exception("The minimum learning rate must be less than the learning rate")
         elif key == "momentum_alpha":
@@ -150,7 +150,8 @@ def remove_unfeasible_combinations(combinations):
     for i, combination in enumerate(combinations):
         try:
             check_param(combination)
-        except Exception:
+        except Exception as e:
+            print(e)
             index_to_remove.append(i)
             continue
     
