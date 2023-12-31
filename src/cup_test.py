@@ -1,13 +1,10 @@
 from utilities import datasets_utilities
-from selection import cross_validation
-from selection import grid_search
 from network import Network
 import training
-import pprint
+
 
 
 if __name__ == '__main__':
-
     # Read the datasets
     inputs, targets, cup_inputs = datasets_utilities.read_cup()
     test_inputs, test_targets = datasets_utilities.read_cup_holdout()
@@ -31,7 +28,7 @@ if __name__ == '__main__':
     # Train the network
     train_parameters = {
         "network": network,
-        "epochs": 1500,
+        "epochs": 30000,
         "batch_size": "all",  
         "learning_rate": 0.0006,
         "learning_rate_decay": False,
@@ -42,6 +39,7 @@ if __name__ == '__main__':
         "nesterov_momentum": False,
         "regularization_func": "L2",
         "regularization_lambda": 0,
+        "stop_if_impr_is_low": True,
         "early_stopping": False,
         "patience": 25,
         "delta_percentage": 0.03
@@ -49,13 +47,17 @@ if __name__ == '__main__':
 
     training_istance = training.learning_methods["gd"](**train_parameters)
     
-    training_istance.training(inputs, targets, test_inputs, test_targets, verbose=True, plot=True)
+    training_istance.training(inputs, targets, verbose=True, plot=True)
 
     datasets_utilities.write_predictions(network.predict(cup_inputs), "predictions")
 
 
 """
 # Example of cross validation
+from selection import cross_validation
+from selection import grid_search
+import pprint
+
     # Read the datasets
     inputs, targets, _ = datasets_utilities.read_cup()
     
@@ -101,27 +103,26 @@ from keras.layers import Dense
 from keras.optimizers import SGD
 
 model = Sequential()
-model.add(Dense(40, input_dim=10, activation='selu'))
-model.add(Dense(40, activation='selu'))
-model.add(Dense(40, activation='selu'))
-model.add(Dense(40, activation='selu'))
+model.add(Dense(150, input_dim=10, activation='selu'))
+model.add(Dense(150, activation='selu'))
+model.add(Dense(150, activation='selu'))
+model.add(Dense(150, activation='selu'))
 model.add(Dense(3))
 
 # Read the datasets
 inputs, targets, _ = datasets_utilities.read_cup()
 
-model.compile(loss='mean_squared_error', optimizer= SGD(learning_rate=0.001, momentum=0.9), metrics=['MeanSquaredError'])
+model.compile(loss='mean_squared_error', optimizer= SGD(learning_rate=0.0006, momentum=0.9), metrics=['MeanSquaredError'])
 
 training_set_inputs, training_set_targets, validation_set_inputs, validation_set_targets = datasets_utilities.split_dataset(inputs, targets, 0.20)
-history = model.fit(training_set_inputs, training_set_targets, epochs=5000, batch_size=720, verbose=1, validation_data=(validation_set_inputs, validation_set_targets))
+history = model.fit(training_set_inputs, training_set_targets, epochs=10000, batch_size=720, verbose=1, validation_data=(validation_set_inputs, validation_set_targets))
 
 plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.ylim(0, 10)
-plt.xlabel('epoch')
-plt.legend(['train', 'val'], loc='upper left')
+plt.plot(history.history['val_loss'], linestyle='dashed')
+plt.ylabel('MSE')
+plt.ylim(0, 8)
+plt.xlabel('Epoch')
+plt.legend(['Trainining', 'Validation'], loc='upper right')
 plt.savefig('keras.png', bbox_inches='tight')
 # model.summary()
 #errors = model.evaluate(validation_set_inputs, validation_set_targets)

@@ -20,9 +20,10 @@ class GD:
         regularization_func,
         regularization_lambda,
         learning_rate_decay = False,
-        learning_rate_decay_func = None,
+        learning_rate_decay_func = "linear",
         learning_rate_decay_epochs = None,
         min_learning_rate = None,
+        stop_if_impr_is_low = False,
         early_stopping = False,
         patience=20,
         delta_percentage=0.03,
@@ -60,6 +61,7 @@ class GD:
                 "nesterov_momentum": nesterov_momentum,
                 "regularization_func": regularization_func,
                 "regularization_lambda": regularization_lambda,
+                "stop_if_impr_is_low": stop_if_impr_is_low,
                 "early_stopping": early_stopping,
                 "patience": patience,
                 "delta_percentage": delta_percentage,
@@ -82,6 +84,7 @@ class GD:
         self.nesterov_momentum = nesterov_momentum
         self.regularization = regularization_functions.regularization_funcs[regularization_func]
         self.regularization_lambda = regularization_lambda
+        self.stop_if_impr_is_low = stop_if_impr_is_low
 
         if early_stopping:
             self.early_stopping = es.EarlyStopping(patience, delta_percentage)
@@ -151,6 +154,10 @@ class GD:
                 tr_inputs, tr_targets, self.batch_size
             )
 
+            if self.stop_if_impr_is_low:
+                if epoch > 1 and abs(tr_loss[-1] - tr_loss_epoch) < 1e-6:
+                    break
+
             # store loss and metric of the epoch
             tr_loss = np.append(tr_loss, tr_loss_epoch)
             tr_metric = np.append(tr_metric, tr_metric_epoch)
@@ -178,20 +185,31 @@ class GD:
 
             # print epoch results
             if verbose:
-                print(
-                    "Epoch: "
-                    + str(epoch)
-                    + "\tTraining metric: "
-                    + "{:.4f}".format(tr_metric[epoch])
-                    + " Validation metric: "
-                    + "{:.4f}".format(vl_metric[epoch])
-                    + "\n\t\tTraining loss: "
-                    + "{:.4f}".format(tr_loss[epoch])
-                    + " Validation loss: "
-                    + "{:.4f}".format(vl_loss[epoch])
-                    + "\n"
-                )
-
+                if validation:
+                    print(
+                        "Epoch: "
+                        + str(epoch)
+                        + "\tTraining metric: "
+                        + "{:.4f}".format(tr_metric[epoch])
+                        + " Validation metric: "
+                        + "{:.4f}".format(vl_metric[epoch])
+                        + "\n\t\tTraining loss: "
+                        + "{:.4f}".format(tr_loss[epoch])
+                        + " Validation loss: "
+                        + "{:.4f}".format(vl_loss[epoch])
+                        + "\n"
+                    )
+                else:
+                    print(
+                        "Epoch: "
+                        + str(epoch)
+                        + "\tTraining metric: "
+                        + "{:.4f}".format(tr_metric[epoch])
+                        + "\tTraining loss: "
+                        + "{:.4f}".format(tr_loss[epoch])
+                        + "\n"
+                    )
+                    
         # plot results
         if plot:
             if validation:

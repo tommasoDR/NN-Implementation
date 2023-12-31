@@ -161,9 +161,9 @@ def write_predictions(predictions, filename):
     """
     f = open(f"selection/results/{filename}.csv", "w")
     for i in range(len(predictions)):
+        f.write(str(i + 1))
         for j in range(len(predictions[i])):
-            if j != 0:
-                f.write(",")
+            f.write(",")
             f.write(str(predictions[i][j]))
         f.write("\n")
     f.close()

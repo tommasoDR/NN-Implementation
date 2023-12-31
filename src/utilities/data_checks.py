@@ -116,6 +116,9 @@ def check_param(parameters):
         elif key == "regularization_lambda":
             if parameters[key] < 0:
                 raise Exception("The regularization lambda must be greater or equal to 0")
+        elif key == "stop_if_impr_is_low":
+            if parameters[key] != True and parameters[key] != False:
+                raise Exception("The stop if improvement is low must be a boolean")
         elif key == "early_stopping":
             if parameters[key] != True and parameters[key] != False:
                 raise Exception("The early stopping must be a boolean")
