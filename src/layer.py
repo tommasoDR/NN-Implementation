@@ -75,8 +75,8 @@ class Layer:
         old_delta_bias, old_delta_weight = old_delta
         if old_delta_bias is None or old_delta_weight is None:
             return
-        self.delta_b += momentum_alpha * old_delta_bias
-        self.delta_w += momentum_alpha * old_delta_weight
+        self.delta_b += (momentum_alpha * old_delta_bias)
+        self.delta_w += (momentum_alpha * old_delta_weight)
     
 
     def apply_nest_momentum(self, momentum_alpha, old_delta):
@@ -88,8 +88,8 @@ class Layer:
         old_delta_bias, old_delta_weight = old_delta
         if old_delta_bias is None or old_delta_weight is None:
             return
-        self.biases += momentum_alpha * old_delta_bias
-        self.weights += momentum_alpha * old_delta_weight
+        self.biases += (momentum_alpha * old_delta_bias)
+        self.weights += (momentum_alpha * old_delta_weight)
 
 
     def update_weights(self):
