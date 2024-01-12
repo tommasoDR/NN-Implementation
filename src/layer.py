@@ -93,7 +93,7 @@ class Layer:
 
 
     def update_weights(self):
-        """ "
+        """ 
         Updates the weights applying the deltas
         """
         self.biases += self.delta_b

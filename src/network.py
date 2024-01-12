@@ -151,9 +151,7 @@ class Network:
             exit(1)
 
         loss = self.loss.function(outputs, targets)
-        metric = self.metric.function(
-            outputs, targets, self.layers_activation_funcs[-1]
-        )
+        metric = self.metric.function(outputs, targets, self.layers_activation_funcs[-1])
 
         return loss, metric
 
